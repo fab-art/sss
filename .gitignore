@@ -5,3 +5,11 @@ coverage
 *.local
 .env*.local
 node_modules/.tmp
+node_modules/
+dist/
+coverage/
+.DS_Store
+*.local
+.env
+.env.*
+!.env.example
