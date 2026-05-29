@@ -1,97 +1,56 @@
-export type AchievementId =
-  | "first-workout"
-  | "three-day-streak"
-  | "seven-day-streak"
-  | "first-1km-run"
-  | "one-hundred-total-push-ups"
-  | "consistency-warrior";
+import type { AchievementDefinition, AchievementSnapshot, UserAchievement } from './types';
 
-export type CosmeticFlair =
-  | "spark"
-  | "ember"
-  | "flame"
-  | "runner-stripe"
-  | "push-up-badge"
-  | "warrior-crest";
-
-export type AchievementReward = Readonly<{
-  xpBonus?: number;
-  cosmeticFlair?: CosmeticFlair;
-}>;
-
-export type AchievementState = Readonly<{
-  /** All completed workouts across every activity type. */
-  totalWorkouts: number;
-  /** Current consecutive-day workout streak. */
-  currentStreakDays: number;
-  /** Longest consecutive-day workout streak ever recorded. */
-  longestStreakDays: number;
-  /** Longest single run distance in meters. */
-  longestRunMeters: number;
-  /** All push-up reps completed across workouts. */
-  totalPushUps: number;
-  /** Consecutive weeks where the user met their workout goal. */
-  consecutiveGoalWeeks: number;
-}>;
-
-export type AchievementDefinition = Readonly<{
-  id: AchievementId;
-  title: string;
-  reward: AchievementReward;
-  predicate: (state: AchievementState) => boolean;
-}>;
-
-const bestStreakDays = (state: AchievementState): number =>
-  Math.max(state.currentStreakDays, state.longestStreakDays);
-
-export const ACHIEVEMENTS = [
+export const ACHIEVEMENTS: AchievementDefinition[] = [
   {
-    id: "first-workout",
-    title: "First Workout",
-    reward: { xpBonus: 25, cosmeticFlair: "spark" },
-    predicate: (state) => state.totalWorkouts >= 1,
+    id: 'first-quest',
+    title: 'First Quest',
+    description: 'Complete your first workout.',
+    xpReward: 50,
+    isUnlocked: ({ progression }) => progression.workoutsCompleted >= 1
   },
   {
-    id: "three-day-streak",
-    title: "3-Day Streak",
-    reward: { xpBonus: 75, cosmeticFlair: "ember" },
-    predicate: (state) => bestStreakDays(state) >= 3,
+    id: 'three-day-flame',
+    title: 'Three-Day Flame',
+    description: 'Build a three-day workout streak.',
+    xpReward: 100,
+    isUnlocked: ({ streak }) => streak.longest >= 3
   },
   {
-    id: "seven-day-streak",
-    title: "7-Day Streak",
-    reward: { xpBonus: 200, cosmeticFlair: "flame" },
-    predicate: (state) => bestStreakDays(state) >= 7,
+    id: 'guardian-rising',
+    title: 'Guardian Rising',
+    description: 'Reach Guardian rank.',
+    xpReward: 150,
+    isUnlocked: ({ progression }) => progression.totalXp >= 1_500
   },
   {
-    id: "first-1km-run",
-    title: "First 1 km Run",
-    reward: { xpBonus: 100, cosmeticFlair: "runner-stripe" },
-    predicate: (state) => state.longestRunMeters >= 1_000,
-  },
-  {
-    id: "one-hundred-total-push-ups",
-    title: "100 Total Push-Ups",
-    reward: { xpBonus: 100, cosmeticFlair: "push-up-badge" },
-    predicate: (state) => state.totalPushUps >= 100,
-  },
-  {
-    id: "consistency-warrior",
-    title: "Consistency Warrior",
-    reward: { xpBonus: 300, cosmeticFlair: "warrior-crest" },
-    predicate: (state) => state.consecutiveGoalWeeks >= 4,
-  },
-] as const satisfies readonly AchievementDefinition[];
-
-export const achievementCatalog = ACHIEVEMENTS;
+    id: 'ten-trials',
+    title: 'Ten Trials',
+    description: 'Complete ten workouts.',
+    xpReward: 200,
+    isUnlocked: ({ progression }) => progression.workoutsCompleted >= 10
+  }
+];
 
 export function evaluateAchievements(
-  currentlyUnlocked: readonly AchievementId[],
-  state: AchievementState,
-): AchievementDefinition[] {
-  const unlocked = new Set<AchievementId>(currentlyUnlocked);
+  snapshot: AchievementSnapshot,
+  unlocked: UserAchievement[],
+  unlockedAt: string
+): UserAchievement[] {
+  const unlockedIds = new Set(unlocked.map((achievement) => achievement.id));
+  const newlyUnlocked = ACHIEVEMENTS.filter(
+    (achievement) => !unlockedIds.has(achievement.id) && achievement.isUnlocked(snapshot)
+  ).map((achievement) => ({
+    id: achievement.id,
+    unlockedAt,
+    xpReward: achievement.xpReward
+  }));
 
-  return ACHIEVEMENTS.filter(
-    (achievement) => !unlocked.has(achievement.id) && achievement.predicate(state),
-  );
+  return [...unlocked, ...newlyUnlocked];
+}
+
+export function getAchievementRewardXp(previous: UserAchievement[], next: UserAchievement[]): number {
+  const previousIds = new Set(previous.map((achievement) => achievement.id));
+  return next
+    .filter((achievement) => !previousIds.has(achievement.id))
+    .reduce((total, achievement) => total + achievement.xpReward, 0);
 }
