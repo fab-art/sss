@@ -1,52 +1,53 @@
-export type ID = string;
 export type ISODateString = string;
-export type ISODateTimeString = string;
 
-export type WorkoutType = 'pushups' | 'situps' | 'squats' | 'cardio' | 'custom';
+export type Rank = {
+  id: string;
+  title: string;
+  minXp: number;
+  emblem: string;
+};
 
-export interface User {
-  id: ID;
-  username: string;
-  displayName?: string;
-  createdAt: ISODateTimeString;
-  updatedAt: ISODateTimeString;
-}
+export type WorkoutInput = {
+  completedAt: ISODateString;
+  durationMinutes: number;
+  intensity: 1 | 2 | 3 | 4 | 5;
+  exercisesCompleted: number;
+};
 
-export interface Workout {
-  id: ID;
-  userId: ID;
-  type: WorkoutType;
-  date: ISODateString;
-  pushups: number;
-  sets: number;
-  reps: number;
-  durationSeconds?: number;
-  notes?: string;
-  createdAt: ISODateTimeString;
-  updatedAt: ISODateTimeString;
-}
+export type WorkoutRecord = WorkoutInput & {
+  id: string;
+  xpAwarded: number;
+};
 
-export interface Achievement {
-  id: ID;
-  userId: ID;
-  key: string;
+export type ProgressionState = {
+  totalXp: number;
+  level: number;
+  rankId: string;
+  workoutsCompleted: number;
+};
+
+export type StreakState = {
+  current: number;
+  longest: number;
+  lastWorkoutDate?: ISODateString;
+};
+
+export type AchievementDefinition = {
+  id: string;
   title: string;
   description: string;
-  unlockedAt?: ISODateTimeString;
-  progress: number;
-  goal: number;
-  createdAt: ISODateTimeString;
-  updatedAt: ISODateTimeString;
-}
+  xpReward: number;
+  isUnlocked: (snapshot: AchievementSnapshot) => boolean;
+};
 
-export interface Progression {
-  id: ID;
-  userId: ID;
-  date: ISODateString;
-  totalPushups: number;
-  streakDays: number;
-  level: number;
-  experience: number;
-  createdAt: ISODateTimeString;
-  updatedAt: ISODateTimeString;
-}
+export type AchievementSnapshot = {
+  progression: ProgressionState;
+  streak: StreakState;
+  workouts: WorkoutRecord[];
+};
+
+export type UserAchievement = {
+  id: string;
+  unlockedAt: ISODateString;
+  xpReward: number;
+};
