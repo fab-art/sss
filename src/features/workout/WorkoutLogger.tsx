@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Dumbbell } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
@@ -94,7 +94,17 @@ function clampProgress(value: number, exercise: ExercisePlan) {
   return exercise.unit === 'km' ? Number(clamped.toFixed(1)) : Math.round(clamped);
 }
 
-function WorkoutMuscleGraphic({ exercise, repCount }: { exercise: ExercisePlan; repCount: number }) {
+/**
+ * Memoized SVG component to prevent expensive re-renders of the muscle map
+ * when unrelated WorkoutLogger state (duration, intensity) changes.
+ */
+const WorkoutMuscleGraphic = memo(function WorkoutMuscleGraphic({
+  exercise,
+  repCount
+}: {
+  exercise: ExercisePlan;
+  repCount: number;
+}) {
   const highlighted = muscleHighlight[exercise.key];
   const isPushups = exercise.key === 'pushups';
   const isSquats = exercise.key === 'squats';
@@ -197,7 +207,7 @@ function WorkoutMuscleGraphic({ exercise, repCount }: { exercise: ExercisePlan; 
       </div>
     </motion.div>
   );
-}
+});
 
 export function WorkoutLogger() {
   const completeWorkout = useProgressionStore((state) => state.completeWorkout);
