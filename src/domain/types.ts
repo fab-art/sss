@@ -51,3 +51,49 @@ export type UserAchievement = {
   unlockedAt: ISODateString;
   xpReward: number;
 };
+
+export type User = {
+  id: string;
+  username: string;
+  displayName: string;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+};
+
+export type Workout = {
+  id: string;
+  userId: string;
+  type: 'pushups' | 'squats' | 'situps' | 'cardio' | string;
+  date: string;
+  pushups: number;
+  sets: number;
+  reps: number;
+  notes?: string;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+};
+
+export type Achievement = {
+  id: string;
+  userId: string;
+  key: string;
+  title: string;
+  description: string;
+  unlockedAt?: ISODateString;
+  progress: number;
+  goal: number;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+};
+
+export type Progression = {
+  id: string;
+  userId: string;
+  date: string;
+  totalPushups: number;
+  streakDays: number;
+  level: number;
+  experience: number;
+  createdAt: ISODateString;
+  updatedAt: ISODateString;
+};

@@ -6,7 +6,7 @@ import {
   getAllRecords,
   getRecord,
   toDomainList,
-  updateRecord,
+  updateRecord
 } from './repositoryUtils';
 import { failure, success, type PersistenceResult } from './errors';
 
@@ -22,7 +22,7 @@ export const createProgressionRepository = (database: SssDatabase = defaultDb) =
 
   update: (
     id: string,
-    changes: Partial<Omit<Progression, 'id'>>,
+    changes: Partial<Omit<Progression, 'id'>>
   ): Promise<PersistenceResult<Progression | undefined>> =>
     updateRecord(database.progression, 'progression', id, changes),
 
@@ -41,7 +41,7 @@ export const createProgressionRepository = (database: SssDatabase = defaultDb) =
   getByDateRange: async (
     userId: string,
     startDate: string,
-    endDate: string,
+    endDate: string
   ): Promise<PersistenceResult<Progression[]>> => {
     try {
       const rows = await database.progression
@@ -52,7 +52,7 @@ export const createProgressionRepository = (database: SssDatabase = defaultDb) =
     } catch (error) {
       return failure('query', 'progression', error);
     }
-  },
+  }
 });
 
 export const progressionRepository = createProgressionRepository();

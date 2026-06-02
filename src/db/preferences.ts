@@ -11,7 +11,7 @@ export interface PreferencesStorage {
 const PREFERENCE_KEYS = {
   theme: 'ssswork:theme',
   onboardingComplete: 'ssswork:onboardingComplete',
-  username: 'ssswork:username',
+  username: 'ssswork:username'
 } as const;
 
 const getStorage = (storage?: PreferencesStorage): PreferencesStorage => {
@@ -30,7 +30,9 @@ export const createPreferences = (storage?: PreferencesStorage) => ({
   getTheme: (): PersistenceResult<ThemePreference> => {
     try {
       const value = getStorage(storage).getItem(PREFERENCE_KEYS.theme);
-      return success(value === 'light' || value === 'dark' || value === 'system' ? value : 'system');
+      return success(
+        value === 'light' || value === 'dark' || value === 'system' ? value : 'system'
+      );
     } catch (error) {
       return failure('preferences', undefined, error);
     }
@@ -86,7 +88,7 @@ export const createPreferences = (storage?: PreferencesStorage) => ({
     } catch (error) {
       return failure('preferences', undefined, error);
     }
-  },
+  }
 });
 
 export const preferences = createPreferences();

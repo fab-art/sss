@@ -6,7 +6,7 @@ import {
   getAllRecords,
   getRecord,
   toDomainList,
-  updateRecord,
+  updateRecord
 } from './repositoryUtils';
 import { failure, success, type PersistenceResult } from './errors';
 
@@ -21,16 +21,17 @@ export const createWorkoutRepository = (database: SssDatabase = defaultDb) => ({
 
   update: (
     id: string,
-    changes: Partial<Omit<Workout, 'id'>>,
+    changes: Partial<Omit<Workout, 'id'>>
   ): Promise<PersistenceResult<Workout | undefined>> =>
     updateRecord(database.workouts, 'workouts', id, changes),
 
-  delete: (id: string): Promise<PersistenceResult<void>> => deleteRecord(database.workouts, 'workouts', id),
+  delete: (id: string): Promise<PersistenceResult<void>> =>
+    deleteRecord(database.workouts, 'workouts', id),
 
   getWorkoutsByDateRange: async (
     userId: string,
     startDate: string,
-    endDate: string,
+    endDate: string
   ): Promise<PersistenceResult<Workout[]>> => {
     try {
       const rows = await database.workouts
@@ -51,7 +52,7 @@ export const createWorkoutRepository = (database: SssDatabase = defaultDb) => ({
     } catch (error) {
       return failure('query', 'workouts', error);
     }
-  },
+  }
 });
 
 export const workoutRepository = createWorkoutRepository();

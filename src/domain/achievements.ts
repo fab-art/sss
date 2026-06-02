@@ -48,7 +48,10 @@ export function evaluateAchievements(
   return [...unlocked, ...newlyUnlocked];
 }
 
-export function getAchievementRewardXp(previous: UserAchievement[], next: UserAchievement[]): number {
+export function getAchievementRewardXp(
+  previous: UserAchievement[],
+  next: UserAchievement[]
+): number {
   const previousIds = new Set(previous.map((achievement) => achievement.id));
   return next
     .filter((achievement) => !previousIds.has(achievement.id))

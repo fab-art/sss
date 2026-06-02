@@ -6,7 +6,7 @@ import {
   getAllRecords,
   getRecord,
   toDomainList,
-  updateRecord,
+  updateRecord
 } from './repositoryUtils';
 import { failure, success, type PersistenceResult } from './errors';
 
@@ -22,7 +22,7 @@ export const createAchievementRepository = (database: SssDatabase = defaultDb) =
 
   update: (
     id: string,
-    changes: Partial<Omit<Achievement, 'id'>>,
+    changes: Partial<Omit<Achievement, 'id'>>
   ): Promise<PersistenceResult<Achievement | undefined>> =>
     updateRecord(database.achievements, 'achievements', id, changes),
 
@@ -31,7 +31,9 @@ export const createAchievementRepository = (database: SssDatabase = defaultDb) =
 
   getByUserId: async (userId: string): Promise<PersistenceResult<Achievement[]>> => {
     try {
-      return success(toDomainList(await database.achievements.where('userId').equals(userId).toArray()));
+      return success(
+        toDomainList(await database.achievements.where('userId').equals(userId).toArray())
+      );
     } catch (error) {
       return failure('query', 'achievements', error);
     }
@@ -48,7 +50,7 @@ export const createAchievementRepository = (database: SssDatabase = defaultDb) =
     } catch (error) {
       return failure('query', 'achievements', error);
     }
-  },
+  }
 });
 
 export const achievementRepository = createAchievementRepository();

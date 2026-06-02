@@ -13,7 +13,7 @@ const applyVersionedSchema = (database: Dexie): void => {
     users: '&id, username, createdAt, updatedAt',
     workouts: '&id, userId, date, type, [userId+date], createdAt, updatedAt',
     achievements: '&id, userId, key, [userId+key], unlockedAt, createdAt, updatedAt',
-    progression: '&id, userId, date, [userId+date], level, createdAt, updatedAt',
+    progression: '&id, userId, date, [userId+date], level, createdAt, updatedAt'
   });
 };
 

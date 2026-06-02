@@ -19,12 +19,15 @@ export function Dashboard() {
         animate={{ opacity: 1, y: 0 }}
         className="overflow-hidden rounded-[2rem] border border-orange-300/20 bg-gradient-to-br from-orange-500/25 via-slate-900 to-indigo-950 p-8 shadow-2xl shadow-orange-950/40"
       >
-        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-orange-200">HeroPath</p>
+        <p className="text-sm font-semibold uppercase tracking-[0.35em] text-orange-200">
+          HeroPath
+        </p>
         <div className="mt-5 flex flex-col gap-6 md:flex-row md:items-end md:justify-between">
           <div>
             <h1 className="text-4xl font-black text-white md:text-6xl">Forge ahead, {heroName}.</h1>
             <p className="mt-4 max-w-2xl text-lg text-slate-300">
-              Complete workouts, protect your streak, and climb from Initiate to Legend — fully offline on this device.
+              Complete workouts, protect your streak, and climb from Initiate to Legend — fully
+              offline on this device.
             </p>
           </div>
           <div className="rounded-3xl bg-black/30 p-5 text-center ring-1 ring-white/10">
@@ -36,17 +39,39 @@ export function Dashboard() {
       </motion.div>
 
       <div className="grid gap-4 md:grid-cols-4">
-        <StatCard label="Total XP" value={progression.totalXp} detail={nextRank ? `${nextRank.minXp - progression.totalXp} XP to ${nextRank.title}` : 'Max rank achieved'} />
-        <StatCard label="Streak" value={`${streak.current} days`} detail={`Best: ${streak.longest} days`} />
-        <StatCard label="Workouts" value={progression.workoutsCompleted} detail="Trials completed" />
-        <StatCard label="Latest XP" value={workouts[0]?.xpAwarded ?? 0} detail="From your last workout" />
+        <StatCard
+          label="Total XP"
+          value={progression.totalXp}
+          detail={
+            nextRank
+              ? `${nextRank.minXp - progression.totalXp} XP to ${nextRank.title}`
+              : 'Max rank achieved'
+          }
+        />
+        <StatCard
+          label="Streak"
+          value={`${streak.current} days`}
+          detail={`Best: ${streak.longest} days`}
+        />
+        <StatCard
+          label="Workouts"
+          value={progression.workoutsCompleted}
+          detail="Trials completed"
+        />
+        <StatCard
+          label="Latest XP"
+          value={workouts[0]?.xpAwarded ?? 0}
+          detail="From your last workout"
+        />
       </div>
 
       <div className="rounded-3xl border border-white/10 bg-slate-950/70 p-6">
         <div className="flex items-center justify-between gap-4">
           <div>
             <h2 className="text-xl font-bold text-white">Level progress</h2>
-            <p className="text-sm text-slate-400">{getXpIntoLevel(progression.totalXp)} / {getXpRequiredForNextLevel()} XP</p>
+            <p className="text-sm text-slate-400">
+              {getXpIntoLevel(progression.totalXp)} / {getXpRequiredForNextLevel()} XP
+            </p>
           </div>
           <span className="text-sm font-semibold text-orange-200">Level {progression.level}</span>
         </div>
