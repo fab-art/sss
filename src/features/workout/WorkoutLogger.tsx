@@ -204,7 +204,7 @@ export function WorkoutLogger() {
       completedAt: nowIso(),
       durationMinutes,
       intensity,
-      exercisesCompleted
+      completedExercises
     });
     setLastAward(workout.xpAwarded);
   }

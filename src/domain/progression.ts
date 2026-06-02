@@ -74,8 +74,8 @@ export const LOW_CONSISTENCY_THRESHOLD = 0.6;
 export const ADVANCEMENT_CONSISTENCY_THRESHOLD = 0.85;
 export const MIN_ADVANCEMENT_STREAK_DAYS = 21;
 export const MIN_ADVANCEMENT_DAYS_AT_RANK = 14;
-// Snap threshold: close gaps ≤5% to target to guarantee progression
-export const PROGRESSION_SNAP_THRESHOLD = 0.05;
+// Snap threshold: close gaps ≤0.5 reps/km to target to guarantee progression
+export const PROGRESSION_SNAP_THRESHOLD = 0.5;
 
 const clamp = (value: number, min = 0, max = 1): number => Math.min(max, Math.max(min, value));
 
@@ -147,9 +147,8 @@ const scaleToward = (current: number, target: number, fraction: number): number 
   
   // Snap to target if within threshold to avoid asymptotic approach
   const gap = target - scaled;
-  const snapDistance = (target - boundedCurrent) * PROGRESSION_SNAP_THRESHOLD;
   
-  return gap > 0 && gap <= snapDistance ? target : scaled;
+  return gap > 0 && gap <= PROGRESSION_SNAP_THRESHOLD ? target : scaled;
 };
 
 const deload = (input: ProgressionInput): DifficultyTarget => ({
