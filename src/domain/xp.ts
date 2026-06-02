@@ -8,7 +8,7 @@ const LEVEL_XP_SPAN = 250;
 
 export function calculateWorkoutXp(workout: WorkoutInput): number {
   const durationXp = Math.max(0, workout.durationMinutes) * MINUTE_XP;
-  const exerciseXp = Math.max(0, workout.exercisesCompleted) * EXERCISE_XP;
+  const exerciseXp = Math.max(0, workout.completedExercises) * EXERCISE_XP;
   const intensityBonus = 1 + workout.intensity * INTENSITY_MULTIPLIER;
 
   return Math.round((BASE_COMPLETION_XP + durationXp + exerciseXp) * intensityBonus);
