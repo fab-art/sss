@@ -1,2 +1,2 @@
-export * from './db';
+export * from './db/database';
 export * from './domain/types';

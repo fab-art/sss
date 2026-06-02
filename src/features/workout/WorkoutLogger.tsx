@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { Activity, Dumbbell, HeartPulse, Info, Minus, Plus, Target } from 'lucide-react';
+import { Dumbbell } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { nowIso } from '../../lib/date';
 
@@ -183,14 +183,6 @@ export function WorkoutLogger() {
     () => exercisePlan.filter((exercise) => progress[exercise.key] >= exercise.target).length,
     [progress]
   );
-  const totalCompletion = useMemo(() => {
-    const ratio = exercisePlan.reduce(
-      (total, exercise) => total + Math.min(progress[exercise.key] / exercise.target, 1),
-      0
-    );
-
-    return Math.round((ratio / exercisePlan.length) * 100);
-  }, [progress]);
 
   function updateExercise(exercise: ExercisePlan, value: number) {
     setProgress((current) => ({
@@ -204,7 +196,7 @@ export function WorkoutLogger() {
       completedAt: nowIso(),
       durationMinutes,
       intensity,
-      completedExercises
+      exercisesCompleted: completedExercises
     });
     setLastAward(workout.xpAwarded);
   }
@@ -270,6 +262,69 @@ export function WorkoutLogger() {
       {lastAward ? (
         <p className="mt-4 text-center font-bold text-orange-200">+{lastAward} XP earned</p>
       ) : null}
+      <div className="mt-8">
+        <div className="mb-4 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-white">{activeExercise.name}</h3>
+          <span className="text-sm text-slate-400">Target: {activeExercise.target} {activeExercise.unit}</span>
+        </div>
+
+        <div className="mb-6 grid grid-cols-4 gap-2">
+          {exercisePlan.map((exercise) => (
+            <button
+              key={exercise.key}
+              onClick={() => setActiveExerciseKey(exercise.key)}
+              className={`rounded-xl p-2 text-center transition ${
+                activeExerciseKey === exercise.key
+                  ? 'bg-orange-500 text-white'
+                  : 'bg-slate-800 text-slate-400 hover:bg-slate-700'
+              }`}
+            >
+              <div className="text-xs font-bold">{exercise.name.split(' ')[0]}</div>
+            </button>
+          ))}
+        </div>
+
+        <div className="grid gap-6 lg:grid-cols-2">
+          <MuscleGraphic exercise={activeExercise} />
+
+          <div className="space-y-6">
+            <div className="rounded-2xl bg-slate-900/50 p-4 border border-white/5">
+              <div className="mb-4 flex items-center justify-between">
+                <span className="text-sm font-medium text-slate-400">Progress</span>
+                <span className="text-lg font-black text-white">
+                  {progress[activeExercise.key]} / {activeExercise.target}
+                </span>
+              </div>
+              <input
+                type="range"
+                min="0"
+                max={activeExercise.target * 2}
+                step={activeExercise.unit === 'km' ? 0.1 : 1}
+                value={progress[activeExercise.key]}
+                onChange={(e) => updateExercise(activeExercise, Number(e.target.value))}
+                className="w-full accent-orange-500"
+              />
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-500">Form Cue</h4>
+              <p className="text-slate-200">{activeExercise.cue}</p>
+            </div>
+
+            <div className="space-y-3">
+              <h4 className="text-sm font-bold uppercase tracking-wider text-slate-500">Pro Tips</h4>
+              <ul className="space-y-2">
+                {activeExercise.tips.map((tip, i) => (
+                  <li key={i} className="flex gap-3 text-sm text-slate-300">
+                    <span className="text-orange-500 font-bold">{i + 1}.</span>
+                    {tip}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
   );
 }
