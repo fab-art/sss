@@ -74,6 +74,8 @@ export const LOW_CONSISTENCY_THRESHOLD = 0.6;
 export const ADVANCEMENT_CONSISTENCY_THRESHOLD = 0.85;
 export const MIN_ADVANCEMENT_STREAK_DAYS = 21;
 export const MIN_ADVANCEMENT_DAYS_AT_RANK = 14;
+// Snap threshold: close gaps ≤5% to target to guarantee progression
+export const PROGRESSION_SNAP_THRESHOLD = 0.05;
 
 const clamp = (value: number, min = 0, max = 1): number => Math.min(max, Math.max(min, value));
 
@@ -141,14 +143,26 @@ export function calculateFatigueScore(input: ProgressionInput): number {
 
 const scaleToward = (current: number, target: number, fraction: number): number => {
   const boundedCurrent = Math.min(current, target);
-  return Math.min(target, boundedCurrent + (target - boundedCurrent) * fraction);
+  const scaled = boundedCurrent + (target - boundedCurrent) * fraction;
+  
+  // Snap to target if within threshold to avoid asymptotic approach
+  const gap = target - scaled;
+  const snapDistance = (target - boundedCurrent) * PROGRESSION_SNAP_THRESHOLD;
+  
+  return gap > 0 && gap <= snapDistance ? target : scaled;
 };
 
 const deload = (input: ProgressionInput): DifficultyTarget => ({
-  reps: Math.max(input.currentRankTarget.reps, Math.floor(input.currentDifficulty.reps * 0.85)),
-  distanceMeters: Math.max(
-    input.currentRankTarget.distanceMeters,
-    Math.floor(input.currentDifficulty.distanceMeters * 0.85)
+  reps: Math.min(
+    input.currentDifficulty.reps,
+    Math.max(input.currentRankTarget.reps, Math.floor(input.currentDifficulty.reps * 0.85))
+  ),
+  distanceMeters: Math.min(
+    input.currentDifficulty.distanceMeters,
+    Math.max(
+      input.currentRankTarget.distanceMeters,
+      Math.floor(input.currentDifficulty.distanceMeters * 0.85)
+    )
   )
 });
 
