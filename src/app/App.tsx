@@ -3,6 +3,7 @@ import { Dashboard } from '../features/dashboard/Dashboard';
 import { Onboarding } from '../features/onboarding/Onboarding';
 import { ProfilePanel } from '../features/profile/ProfilePanel';
 import { WorkoutLogger } from '../features/workout/WorkoutLogger';
+import { NutritionTracker } from '../features/nutrition/NutritionTracker';
 import { useHydrateProgression } from '../hooks/useHydrateProgression';
 import { useProgressionStore } from '../store/useProgressionStore';
 import { useUserStore } from '../store/useUserStore';
@@ -27,6 +28,7 @@ export function App() {
           ) : null}
           <Dashboard />
           <WorkoutLogger />
+          <NutritionTracker />
           <AchievementList />
         </div>
         <ProfilePanel />

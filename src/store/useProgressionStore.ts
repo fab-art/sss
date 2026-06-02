@@ -59,7 +59,7 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
 
     const workouts = [record, ...get().workouts];
     const streak = applyWorkoutToStreak(get().streak, workout.completedAt);
-    let progression = completeWorkoutProgression(get().progression, xpAwarded);
+    let progression = completeWorkoutProgression(get().progression, xpAwarded, workout);
     const achievements = evaluateAchievements(
       { progression, streak, workouts },
       get().achievements,
