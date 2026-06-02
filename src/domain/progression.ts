@@ -1,12 +1,20 @@
 import { getRankForXp } from './ranks';
 import { getLevelForXp } from './xp';
-import type { ProgressionState } from './types';
+import type { ProgressionState, WorkoutInput } from './types';
 
 export const initialProgression: ProgressionState = {
   totalXp: 0,
   level: 1,
   rankId: 'initiate',
-  workoutsCompleted: 0
+  workoutsCompleted: 0,
+  muscleGrowth: {
+    chest: 0,
+    core: 0,
+    legs: 0,
+    shoulders: 0,
+    back: 0,
+    cardio: 0
+  }
 };
 
 export function applyXp(state: ProgressionState, xpAwarded: number): ProgressionState {
@@ -23,11 +31,39 @@ export function applyXp(state: ProgressionState, xpAwarded: number): Progression
 
 export function completeWorkoutProgression(
   state: ProgressionState,
-  xpAwarded: number
+  xpAwarded: number,
+  workout?: WorkoutInput
 ): ProgressionState {
-  return {
+  const nextState = {
     ...applyXp(state, xpAwarded),
     workoutsCompleted: state.workoutsCompleted + 1
+  };
+
+  if (!workout) return nextState;
+
+  // Note: For MVP we use the exercisesCompleted as a rough proxy if detailed rep data isn't passed,
+  // but here we can at least apply some growth.
+  // Actually, WorkoutInput only has durationMinutes, intensity, and exercisesCompleted.
+  // The PDS implies more detailed tracking in the UI (WorkoutLogger has it).
+
+  const muscleGrowth = { ...state.muscleGrowth };
+  const intensityFactor = 1 + (workout.intensity - 3) * 0.1; // Intensity 3 is baseline
+
+  // Simplified growth application for MVP based on WorkoutInput
+  if (workout.exercisesCompleted > 0) {
+    // Distribute growth based on exercises completed (assuming balanced distribution for now)
+    const growthPerExercise = (workout.exercisesCompleted / 4) * intensityFactor;
+
+    muscleGrowth.chest = Math.min(100, muscleGrowth.chest + growthPerExercise * 3.0);
+    muscleGrowth.core = Math.min(100, muscleGrowth.core + growthPerExercise * 3.5);
+    muscleGrowth.legs = Math.min(100, muscleGrowth.legs + growthPerExercise * 3.0);
+    muscleGrowth.shoulders = Math.min(100, muscleGrowth.shoulders + growthPerExercise * 1.5);
+    muscleGrowth.cardio = Math.min(100, muscleGrowth.cardio + growthPerExercise * 4.0);
+  }
+
+  return {
+    ...nextState,
+    muscleGrowth
   };
 }
 

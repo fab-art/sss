@@ -1,7 +1,9 @@
 import { useMemo, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Dumbbell } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { nowIso } from '../../lib/date';
+import { MuscleGraphic } from '../../components/MuscleGraphic';
 
 type ExerciseKey = 'pushups' | 'squats' | 'situps' | 'cardio';
 
@@ -92,15 +94,22 @@ function clampProgress(value: number, exercise: ExercisePlan) {
   return exercise.unit === 'km' ? Number(clamped.toFixed(1)) : Math.round(clamped);
 }
 
-function MuscleGraphic({ exercise }: { exercise: ExercisePlan }) {
+function WorkoutMuscleGraphic({ exercise, repCount }: { exercise: ExercisePlan; repCount: number }) {
   const highlighted = muscleHighlight[exercise.key];
   const isPushups = exercise.key === 'pushups';
   const isSquats = exercise.key === 'squats';
   const isSitups = exercise.key === 'situps';
   const isCardio = exercise.key === 'cardio';
 
+  // "Pump" effect: brief scale up on rep increment
+  const pumpScale = repCount > 0 ? 1.05 : 1.0;
+
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/40">
+    <motion.div
+      className="relative rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/40"
+      animate={{ scale: pumpScale }}
+      transition={{ type: 'spring', stiffness: 300, damping: 15 }}
+    >
       <svg
         aria-labelledby={`${exercise.key}-muscle-title`}
         className="mx-auto h-48 w-full max-w-52 drop-shadow-[0_0_18px_rgba(249,115,22,0.18)]"
@@ -115,7 +124,7 @@ function MuscleGraphic({ exercise }: { exercise: ExercisePlan }) {
           r="15"
           strokeWidth="2"
         />
-        <rect
+        <motion.rect
           className={isPushups || isSitups || isCardio ? highlighted : inactiveMuscle}
           height="64"
           rx="24"
@@ -123,38 +132,59 @@ function MuscleGraphic({ exercise }: { exercise: ExercisePlan }) {
           width="54"
           x="53"
           y="45"
+          animate={{ fillOpacity: isPushups || isSitups || isCardio ? 0.8 : 0.3 }}
         />
-        <path
+        <motion.path
           className={isPushups ? highlighted : inactiveMuscle}
           d="M52 52 C29 58 21 75 18 101 L35 105 C40 83 45 72 58 66 Z"
           strokeWidth="2"
+          animate={{ fillOpacity: isPushups ? 0.8 : 0.3 }}
         />
-        <path
+        <motion.path
           className={isPushups ? highlighted : inactiveMuscle}
           d="M108 52 C131 58 139 75 142 101 L125 105 C120 83 115 72 102 66 Z"
           strokeWidth="2"
+          animate={{ fillOpacity: isPushups ? 0.8 : 0.3 }}
         />
-        <path
+        <motion.path
           className={isSitups ? highlighted : inactiveMuscle}
           d="M62 64 H98 V106 C92 113 68 113 62 106 Z"
           strokeWidth="2"
+          animate={{ fillOpacity: isSitups ? 0.8 : 0.3 }}
         />
-        <path
+        <motion.path
           className={isSquats || isCardio ? highlighted : inactiveMuscle}
           d="M56 113 C51 143 47 170 43 203 H62 C67 173 72 146 78 116 Z"
           strokeWidth="2"
+          animate={{ fillOpacity: isSquats || isCardio ? 0.8 : 0.3 }}
         />
-        <path
+        <motion.path
           className={isSquats || isCardio ? highlighted : inactiveMuscle}
           d="M104 113 C109 143 113 170 117 203 H98 C93 173 88 146 82 116 Z"
           strokeWidth="2"
+          animate={{ fillOpacity: isSquats || isCardio ? 0.8 : 0.3 }}
         />
-        <path
+        <motion.path
           className={isCardio ? highlighted : inactiveMuscle}
           d="M74 69 C74 61 86 61 86 69 C94 66 101 76 96 86 C92 94 83 99 80 103 C77 99 68 94 64 86 C59 76 66 66 74 69 Z"
           strokeWidth="2"
+          animate={{ fillOpacity: isCardio ? 0.8 : 0.3 }}
         />
       </svg>
+
+      <AnimatePresence>
+        {repCount > 0 && (
+          <motion.div
+            initial={{ opacity: 0, y: 0 }}
+            animate={{ opacity: 1, y: -20 }}
+            exit={{ opacity: 0 }}
+            className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 text-2xl font-black text-orange-400"
+          >
+            PUMP!
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       <div className="mt-3 flex flex-wrap justify-center gap-2">
         {exercise.muscles.map((muscle) => (
           <span
@@ -165,7 +195,7 @@ function MuscleGraphic({ exercise }: { exercise: ExercisePlan }) {
           </span>
         ))}
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -183,6 +213,8 @@ export function WorkoutLogger() {
     () => exercisePlan.filter((exercise) => progress[exercise.key] >= exercise.target).length,
     [progress]
   );
+  const [showSummary, setShowSummary] = useState(false);
+  const { progression } = useProgressionStore();
 
   function updateExercise(exercise: ExercisePlan, value: number) {
     setProgress((current) => ({
@@ -259,9 +291,65 @@ export function WorkoutLogger() {
       >
         Complete quest
       </button>
-      {lastAward ? (
-        <p className="mt-4 text-center font-bold text-orange-200">+{lastAward} XP earned</p>
+      {lastAward && !showSummary ? (
+        <div className="mt-4 flex flex-col items-center gap-2">
+           <p className="text-center font-bold text-orange-200">+{lastAward} XP earned</p>
+           <button
+             onClick={() => setShowSummary(true)}
+             className="text-sm font-bold text-orange-400 underline"
+           >
+             View Physique Gains
+           </button>
+        </div>
       ) : null}
+
+      <AnimatePresence>
+        {showSummary && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4 backdrop-blur-sm"
+          >
+            <motion.div
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              className="max-w-md w-full rounded-[2.5rem] bg-slate-900 border border-orange-500/30 p-8 shadow-2xl"
+            >
+              <h2 className="text-center text-3xl font-black text-white mb-6">Workout Complete! 🎉</h2>
+
+              <div className="space-y-6">
+                <div>
+                  <h3 className="text-center text-sm font-bold uppercase tracking-widest text-slate-400 mb-4">Physique Gains</h3>
+                  <MuscleGraphic growth={progression.muscleGrowth} />
+                </div>
+
+                <div className="rounded-2xl bg-white/5 p-4 space-y-2">
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">XP Earned</span>
+                    <span className="font-bold text-orange-400">+{lastAward}</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Calories Burned</span>
+                    <span className="font-bold text-emerald-400">+320 cal</span>
+                  </div>
+                  <div className="flex justify-between text-sm">
+                    <span className="text-slate-400">Trials Completed</span>
+                    <span className="font-bold text-white">{progression.workoutsCompleted}</span>
+                  </div>
+                </div>
+
+                <button
+                  onClick={() => setShowSummary(false)}
+                  className="w-full rounded-2xl bg-orange-500 py-4 font-black text-white hover:bg-orange-400 transition"
+                >
+                  Return to Dashboard
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
       <div className="mt-8">
         <div className="mb-4 flex items-center justify-between">
           <h3 className="text-lg font-bold text-white">{activeExercise.name}</h3>
@@ -285,7 +373,7 @@ export function WorkoutLogger() {
         </div>
 
         <div className="grid gap-6 lg:grid-cols-2">
-          <MuscleGraphic exercise={activeExercise} />
+          <WorkoutMuscleGraphic exercise={activeExercise} repCount={progress[activeExerciseKey]} />
 
           <div className="space-y-6">
             <div className="rounded-2xl bg-slate-900/50 p-4 border border-white/5">

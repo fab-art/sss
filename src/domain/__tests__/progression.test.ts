@@ -62,7 +62,13 @@ describe('HeroPath domain rules', () => {
       }
     ];
     const snapshot = {
-      progression: { totalXp: 170, level: 1, rankId: 'initiate', workoutsCompleted: 1 },
+      progression: {
+        totalXp: 170,
+        level: 1,
+        rankId: 'initiate',
+        workoutsCompleted: 1,
+        muscleGrowth: initialProgression.muscleGrowth
+      },
       streak: { current: 1, longest: 1, lastWorkoutDate: '2026-05-28' },
       workouts
     };
