@@ -204,34 +204,22 @@ export function WorkoutLogger() {
       completedAt: nowIso(),
       durationMinutes,
       intensity,
-      exercisesCompleted: Math.max(1, completedExercises)
+      exercisesCompleted
     });
     setLastAward(workout.xpAwarded);
   }
 
   return (
     <section className="rounded-[2rem] border border-white/10 bg-white/10 p-6 shadow-2xl shadow-black/20 backdrop-blur">
-      <div className="flex flex-col gap-4 md:flex-row md:items-center md:justify-between">
-        <div className="flex items-center gap-3">
-          <div className="rounded-2xl bg-orange-500 p-3 text-white shadow-lg shadow-orange-500/30">
-            <Dumbbell />
-          </div>
-          <div>
-            <p className="text-xs font-black uppercase tracking-[0.35em] text-orange-200">
-              Workout page
-            </p>
-            <h2 className="text-2xl font-black text-white">Track today&apos;s quest</h2>
-            <p className="text-sm text-slate-300">
-              Count every exercise, study the target muscles, and review form cues before you claim
-              XP.
-            </p>
-          </div>
+      <div className="flex items-center gap-3">
+        <div className="rounded-2xl bg-orange-500 p-3 text-white">
+          <Dumbbell />
         </div>
-        <div className="rounded-2xl border border-orange-300/20 bg-orange-300/10 px-4 py-3 text-center">
-          <p className="text-xs font-bold uppercase tracking-[0.25em] text-orange-200">
-            Total progress
+        <div>
+          <h2 className="text-2xl font-black text-white">Log a workout</h2>
+          <p className="text-sm text-slate-300">
+            The store routes this intent through pure domain rules, then persists it locally.
           </p>
-          <p className="text-3xl font-black text-white">{totalCompletion}%</p>
         </div>
       </div>
 
@@ -240,8 +228,8 @@ export function WorkoutLogger() {
           Duration minutes
           <input
             className="w-full rounded-2xl border border-white/10 bg-slate-950 p-3 text-white"
-            min="1"
             type="number"
+            min="1"
             value={durationMinutes}
             onChange={(event) => setDurationMinutes(Number(event.target.value))}
           />
@@ -260,136 +248,20 @@ export function WorkoutLogger() {
             ))}
           </select>
         </label>
-      </div>
-
-      <div className="mt-6 grid gap-4 xl:grid-cols-[1.15fr_0.85fr]">
-        <div className="space-y-4">
-          {exercisePlan.map((exercise) => {
-            const current = progress[exercise.key];
-            const percent = Math.min((current / exercise.target) * 100, 100);
-            const isActive = exercise.key === activeExercise.key;
-
-            return (
-              <article
-                className={`rounded-[1.5rem] border p-4 transition ${
-                  isActive
-                    ? 'border-orange-300/40 bg-orange-300/10 shadow-lg shadow-orange-500/10'
-                    : 'border-white/10 bg-slate-950/50'
-                }`}
-                key={exercise.key}
-              >
-                <button
-                  className="w-full text-left"
-                  type="button"
-                  onClick={() => setActiveExerciseKey(exercise.key)}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <h3 className="text-lg font-black text-white">{exercise.name}</h3>
-                      <p className="text-sm text-slate-300">{exercise.cue}</p>
-                    </div>
-                    <span className="rounded-full bg-white/10 px-3 py-1 text-sm font-bold text-orange-100">
-                      {current} / {exercise.target} {exercise.unit}
-                    </span>
-                  </div>
-                </button>
-
-                <div className="mt-4 h-3 overflow-hidden rounded-full bg-slate-900">
-                  <div
-                    className="h-full rounded-full bg-gradient-to-r from-orange-500 via-amber-300 to-cyan-300 shadow-[0_0_18px_rgba(251,146,60,0.75)] transition-all"
-                    style={{ width: `${percent}%` }}
-                  />
-                </div>
-
-                <div className="mt-4 flex items-center gap-3">
-                  <button
-                    aria-label={`Decrease ${exercise.name}`}
-                    className="rounded-xl border border-white/10 bg-white/10 p-3 text-white transition hover:bg-white/20"
-                    type="button"
-                    onClick={() =>
-                      updateExercise(exercise, current - (exercise.unit === 'km' ? 0.1 : 1))
-                    }
-                  >
-                    <Minus size={18} />
-                  </button>
-                  <input
-                    aria-label={`${exercise.name} progress`}
-                    className="min-w-0 flex-1 rounded-2xl border border-white/10 bg-slate-950 p-3 text-center font-black text-white"
-                    min="0"
-                    step={exercise.unit === 'km' ? '0.1' : '1'}
-                    type="number"
-                    value={current}
-                    onChange={(event) => updateExercise(exercise, Number(event.target.value))}
-                  />
-                  <button
-                    aria-label={`Increase ${exercise.name}`}
-                    className="rounded-xl border border-orange-300/30 bg-orange-500/80 p-3 text-white transition hover:bg-orange-400"
-                    type="button"
-                    onClick={() =>
-                      updateExercise(exercise, current + (exercise.unit === 'km' ? 0.1 : 1))
-                    }
-                  >
-                    <Plus size={18} />
-                  </button>
-                </div>
-              </article>
-            );
-          })}
-        </div>
-
-        <aside className="space-y-4 rounded-[1.75rem] border border-white/10 bg-slate-950/40 p-4">
-          <div className="flex items-center gap-3">
-            <div className="rounded-2xl bg-cyan-400/20 p-3 text-cyan-100">
-              <Activity />
-            </div>
-            <div>
-              <p className="text-xs font-bold uppercase tracking-[0.25em] text-cyan-200">
-                Muscle intel
-              </p>
-              <h3 className="text-xl font-black text-white">{activeExercise.name}</h3>
-            </div>
-          </div>
-
-          <MuscleGraphic exercise={activeExercise} />
-
-          <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
-            <div className="mb-3 flex items-center gap-2 text-orange-100">
-              <Info size={18} />
-              <h4 className="font-black">Correct form tips</h4>
-            </div>
-            <ul className="space-y-3 text-sm text-slate-200">
-              {activeExercise.tips.map((tip) => (
-                <li className="flex gap-3" key={tip}>
-                  <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-orange-300 shadow-[0_0_10px_rgba(253,186,116,0.8)]" />
-                  <span>{tip}</span>
-                </li>
-              ))}
-            </ul>
-          </div>
-
-          <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-1">
-            <div className="rounded-2xl border border-emerald-300/20 bg-emerald-300/10 p-4">
-              <div className="flex items-center gap-2 text-emerald-100">
-                <Target size={18} />
-                <span className="font-black">Completed exercises</span>
-              </div>
-              <p className="mt-2 text-3xl font-black text-white">
-                {completedExercises}/{exercisePlan.length}
-              </p>
-            </div>
-            <div className="rounded-2xl border border-fuchsia-300/20 bg-fuchsia-300/10 p-4">
-              <div className="flex items-center gap-2 text-fuchsia-100">
-                <HeartPulse size={18} />
-                <span className="font-black">Safety rule</span>
-              </div>
-              <p className="mt-2 text-sm text-slate-200">Stop early if pain changes your form.</p>
-            </div>
-          </div>
-        </aside>
+        <label className="space-y-2 text-sm font-medium text-slate-200">
+          Exercises completed
+          <input
+            className="w-full rounded-2xl border border-white/10 bg-slate-950 p-3 text-white"
+            type="number"
+            min="1"
+            value={exercisesCompleted}
+            onChange={(event) => setExercisesCompleted(Number(event.target.value))}
+          />
+        </label>
       </div>
 
       <button
-        className="mt-6 w-full rounded-2xl bg-orange-500 px-5 py-4 font-black text-white shadow-lg shadow-orange-500/25 transition hover:bg-orange-400"
+        className="mt-6 w-full rounded-2xl bg-orange-500 px-5 py-4 font-black text-white transition hover:bg-orange-400"
         type="button"
         onClick={logWorkout}
       >
