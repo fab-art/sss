@@ -24,7 +24,9 @@ function loadPreferences(): Pick<UserStore, 'heroName' | 'theme' | 'hasCompleted
   return { ...fallback, ...JSON.parse(raw) };
 }
 
-function savePreferences(state: Pick<UserStore, 'heroName' | 'theme' | 'hasCompletedOnboarding'>): void {
+function savePreferences(
+  state: Pick<UserStore, 'heroName' | 'theme' | 'hasCompletedOnboarding'>
+): void {
   localStorage.setItem(storageKey, JSON.stringify(state));
 }
 

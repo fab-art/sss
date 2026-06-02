@@ -5,7 +5,7 @@ import {
   deleteRecord,
   getAllRecords,
   getRecord,
-  updateRecord,
+  updateRecord
 } from './repositoryUtils';
 import { failure, success, type PersistenceResult } from './errors';
 
@@ -18,10 +18,14 @@ export const createUserRepository = (database: SssDatabase = defaultDb) => ({
 
   getAll: (): Promise<PersistenceResult<User[]>> => getAllRecords(database.users, 'users'),
 
-  update: (id: string, changes: Partial<Omit<User, 'id'>>): Promise<PersistenceResult<User | undefined>> =>
+  update: (
+    id: string,
+    changes: Partial<Omit<User, 'id'>>
+  ): Promise<PersistenceResult<User | undefined>> =>
     updateRecord(database.users, 'users', id, changes),
 
-  delete: (id: string): Promise<PersistenceResult<void>> => deleteRecord(database.users, 'users', id),
+  delete: (id: string): Promise<PersistenceResult<void>> =>
+    deleteRecord(database.users, 'users', id),
 
   getByUsername: async (username: string): Promise<PersistenceResult<User | undefined>> => {
     try {
@@ -30,7 +34,7 @@ export const createUserRepository = (database: SssDatabase = defaultDb) => ({
     } catch (error) {
       return failure('query', 'users', error);
     }
-  },
+  }
 });
 
 export const userRepository = createUserRepository();
