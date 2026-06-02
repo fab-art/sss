@@ -204,7 +204,7 @@ export function WorkoutLogger() {
       completedAt: nowIso(),
       durationMinutes,
       intensity,
-      exercisesCompleted
+      completedExercises
     });
     setLastAward(workout.xpAwarded);
   }
@@ -253,9 +253,9 @@ export function WorkoutLogger() {
           <input
             className="w-full rounded-2xl border border-white/10 bg-slate-950 p-3 text-white"
             type="number"
-            min="1"
-            value={exercisesCompleted}
-            onChange={(event) => setExercisesCompleted(Number(event.target.value))}
+            min="0"
+            value={completedExercises}
+            readOnly
           />
         </label>
       </div>
