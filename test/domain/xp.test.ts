@@ -4,7 +4,7 @@ import {
   calculateWorkoutXp,
   levelFromTotalXp,
   xpForLevel,
-  type Workout,
+  type Workout
 } from '../../src/domain/xp.js';
 
 const targetWorkout: Workout = {
@@ -14,15 +14,15 @@ const targetWorkout: Workout = {
       name: 'Squat',
       sets: [
         { reps: 10, weight: 100 },
-        { reps: 10, weight: 100 },
-      ],
+        { reps: 10, weight: 100 }
+      ]
     },
     {
       id: 'run',
       name: 'Run',
-      sets: [{ durationSeconds: 600, distanceMeters: 2_000 }],
-    },
-  ],
+      sets: [{ durationSeconds: 600, distanceMeters: 2_000 }]
+    }
+  ]
 };
 
 const perfectWorkout: Workout = {
@@ -32,15 +32,15 @@ const perfectWorkout: Workout = {
       name: 'Squat',
       sets: [
         { reps: 10, weight: 100 },
-        { reps: 12, weight: 100 },
-      ],
+        { reps: 12, weight: 100 }
+      ]
     },
     {
       id: 'run',
       name: 'Run',
-      sets: [{ durationSeconds: 700, distanceMeters: 2_100 }],
-    },
-  ],
+      sets: [{ durationSeconds: 700, distanceMeters: 2_100 }]
+    }
+  ]
 };
 
 describe('xpForLevel', () => {
@@ -91,25 +91,25 @@ describe('calculateWorkoutXp', () => {
       baseWorkoutXp: 120,
       perfectBonusXp: 40,
       streakMilestones: [{ days: 7, xp: 70, label: 'Weekly streak' }],
-      achievementUnlocks: [{ id: 'first-perfect', name: 'First perfect workout', xp: 50 }],
+      achievementUnlocks: [{ id: 'first-perfect', name: 'First perfect workout', xp: 50 }]
     });
 
     expect(breakdown.completionRatio).toBe(1);
     expect(breakdown.isPerfectCompletion).toBe(true);
     expect(breakdown.base).toMatchObject({
       source: XP_SOURCES.workoutCompletionBase,
-      xp: 120,
+      xp: 120
     });
     expect(breakdown.bonuses).toEqual([
       expect.objectContaining({ source: XP_SOURCES.perfectCompletionBonus, xp: 40 }),
       expect.objectContaining({ source: XP_SOURCES.streakMilestoneBonus, xp: 70 }),
-      expect.objectContaining({ source: XP_SOURCES.achievementUnlockBonus, xp: 50 }),
+      expect.objectContaining({ source: XP_SOURCES.achievementUnlockBonus, xp: 50 })
     ]);
     expect(breakdown.items.map((item) => item.source)).toEqual([
       XP_SOURCES.workoutCompletionBase,
       XP_SOURCES.perfectCompletionBonus,
       XP_SOURCES.streakMilestoneBonus,
-      XP_SOURCES.achievementUnlockBonus,
+      XP_SOURCES.achievementUnlockBonus
     ]);
     expect(breakdown.total).toBe(280);
   });
@@ -121,19 +121,19 @@ describe('calculateWorkoutXp', () => {
           id: 'squat',
           sets: [
             { reps: 5, weight: 50 },
-            { reps: 5, weight: 50 },
-          ],
+            { reps: 5, weight: 50 }
+          ]
         },
         {
           id: 'run',
-          sets: [{ durationSeconds: 300, distanceMeters: 1_000 }],
-        },
-      ],
+          sets: [{ durationSeconds: 300, distanceMeters: 1_000 }]
+        }
+      ]
     };
 
     const breakdown = calculateWorkoutXp(partialWorkout, targetWorkout, {
       baseWorkoutXp: 100,
-      perfectBonusXp: 25,
+      perfectBonusXp: 25
     });
 
     expect(breakdown.completionRatio).toBe(0.5);
@@ -141,7 +141,7 @@ describe('calculateWorkoutXp', () => {
     expect(breakdown.total).toBe(50);
     expect(breakdown.isPerfectCompletion).toBe(false);
     expect(breakdown.items).toEqual([
-      expect.objectContaining({ source: XP_SOURCES.workoutCompletionBase, xp: 50 }),
+      expect.objectContaining({ source: XP_SOURCES.workoutCompletionBase, xp: 50 })
     ]);
   });
 

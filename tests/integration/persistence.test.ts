@@ -7,7 +7,7 @@ import {
   createProgressionRepository,
   createUserRepository,
   createWorkoutRepository,
-  type SssDatabase,
+  type SssDatabase
 } from '../../src/db';
 import type { Achievement, Progression, User, Workout } from '../../src/domain/types';
 
@@ -44,7 +44,7 @@ describe('Dexie persistence repositories', () => {
       username: 'sam',
       displayName: 'Sam Strong',
       createdAt: now,
-      updatedAt: now,
+      updatedAt: now
     };
     const achievement: Achievement = {
       id: 'achievement-1',
@@ -56,7 +56,7 @@ describe('Dexie persistence repositories', () => {
       progress: 100,
       goal: 100,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: now
     };
     const progressionRecord: Progression = {
       id: 'progression-1',
@@ -67,7 +67,7 @@ describe('Dexie persistence repositories', () => {
       level: 2,
       experience: 275,
       createdAt: now,
-      updatedAt: now,
+      updatedAt: now
     };
     const workout: Workout = {
       id: 'workout-1',
@@ -79,7 +79,7 @@ describe('Dexie persistence repositories', () => {
       reps: 15,
       notes: 'Felt strong.',
       createdAt: now,
-      updatedAt: now,
+      updatedAt: now
     };
 
     expectOk(await users.create(user));
@@ -106,7 +106,7 @@ describe('Dexie persistence repositories', () => {
         sets: 1,
         reps: 10,
         createdAt: now,
-        updatedAt: now,
+        updatedAt: now
       },
       {
         id: 'inside-one',
@@ -117,7 +117,7 @@ describe('Dexie persistence repositories', () => {
         sets: 5,
         reps: 5,
         createdAt: now,
-        updatedAt: now,
+        updatedAt: now
       },
       {
         id: 'inside-two',
@@ -128,7 +128,7 @@ describe('Dexie persistence repositories', () => {
         sets: 4,
         reps: 10,
         createdAt: now,
-        updatedAt: now,
+        updatedAt: now
       },
       {
         id: 'other-user',
@@ -139,8 +139,8 @@ describe('Dexie persistence repositories', () => {
         sets: 1,
         reps: 999,
         createdAt: now,
-        updatedAt: now,
-      },
+        updatedAt: now
+      }
     ];
 
     for (const record of records) {
@@ -148,10 +148,9 @@ describe('Dexie persistence repositories', () => {
     }
 
     expect(expectOk(await workouts.getTotalPushups(userId))).toBe(75);
-    expect(expectOk(await workouts.getWorkoutsByDateRange(userId, '2026-05-10', '2026-05-20'))).toEqual([
-      records[1],
-      records[2],
-    ]);
+    expect(
+      expectOk(await workouts.getWorkoutsByDateRange(userId, '2026-05-10', '2026-05-20'))
+    ).toEqual([records[1], records[2]]);
   });
 
   it('surfaces typed errors instead of throwing when IndexedDB operations fail', async () => {
@@ -176,7 +175,7 @@ describe('localStorage preferences', () => {
     const preferences = createPreferences({
       getItem: (key) => storage.get(key) ?? null,
       setItem: (key, value) => storage.set(key, value),
-      removeItem: (key) => storage.delete(key),
+      removeItem: (key) => storage.delete(key)
     });
 
     expectOk(preferences.setTheme('dark'));
@@ -189,7 +188,7 @@ describe('localStorage preferences', () => {
     expect([...storage.keys()].sort()).toEqual([
       'ssswork:onboardingComplete',
       'ssswork:theme',
-      'ssswork:username',
+      'ssswork:username'
     ]);
   });
 });

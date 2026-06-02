@@ -1,5 +1,10 @@
 import Dexie, { type Table } from 'dexie';
-import type { ProgressionState, StreakState, UserAchievement, WorkoutRecord } from '../domain/types';
+import type {
+  ProgressionState,
+  StreakState,
+  UserAchievement,
+  WorkoutRecord
+} from '../domain/types';
 
 export type SingletonRecord<T> = {
   id: 'current';

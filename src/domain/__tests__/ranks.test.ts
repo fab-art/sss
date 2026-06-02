@@ -2,14 +2,46 @@ import { describe, expect, it } from 'vitest';
 import { RANKS, getNextRank, getRankByNumber, getRankWorkout } from '../index.js';
 
 const prdRanks = [
-  { rankNumber: 1, name: 'Civilian', targetWorkout: { pushups: 5, squats: 5, situps: 5, cardioDistanceKm: 0.5 } },
-  { rankNumber: 2, name: 'Trainee', targetWorkout: { pushups: 10, squats: 10, situps: 10, cardioDistanceKm: 1 } },
-  { rankNumber: 3, name: 'Fighter', targetWorkout: { pushups: 20, squats: 20, situps: 20, cardioDistanceKm: 2 } },
-  { rankNumber: 4, name: 'Hunter', targetWorkout: { pushups: 35, squats: 35, situps: 35, cardioDistanceKm: 3 } },
-  { rankNumber: 5, name: 'Elite', targetWorkout: { pushups: 50, squats: 50, situps: 50, cardioDistanceKm: 5 } },
-  { rankNumber: 6, name: 'Hero Candidate', targetWorkout: { pushups: 70, squats: 70, situps: 70, cardioDistanceKm: 7 } },
-  { rankNumber: 7, name: 'Hero', targetWorkout: { pushups: 85, squats: 85, situps: 85, cardioDistanceKm: 8.5 } },
-  { rankNumber: 8, name: 'Caped Baldy', targetWorkout: { pushups: 100, squats: 100, situps: 100, cardioDistanceKm: 10 } },
+  {
+    rankNumber: 1,
+    name: 'Civilian',
+    targetWorkout: { pushups: 5, squats: 5, situps: 5, cardioDistanceKm: 0.5 }
+  },
+  {
+    rankNumber: 2,
+    name: 'Trainee',
+    targetWorkout: { pushups: 10, squats: 10, situps: 10, cardioDistanceKm: 1 }
+  },
+  {
+    rankNumber: 3,
+    name: 'Fighter',
+    targetWorkout: { pushups: 20, squats: 20, situps: 20, cardioDistanceKm: 2 }
+  },
+  {
+    rankNumber: 4,
+    name: 'Hunter',
+    targetWorkout: { pushups: 35, squats: 35, situps: 35, cardioDistanceKm: 3 }
+  },
+  {
+    rankNumber: 5,
+    name: 'Elite',
+    targetWorkout: { pushups: 50, squats: 50, situps: 50, cardioDistanceKm: 5 }
+  },
+  {
+    rankNumber: 6,
+    name: 'Hero Candidate',
+    targetWorkout: { pushups: 70, squats: 70, situps: 70, cardioDistanceKm: 7 }
+  },
+  {
+    rankNumber: 7,
+    name: 'Hero',
+    targetWorkout: { pushups: 85, squats: 85, situps: 85, cardioDistanceKm: 8.5 }
+  },
+  {
+    rankNumber: 8,
+    name: 'Caped Baldy',
+    targetWorkout: { pushups: 100, squats: 100, situps: 100, cardioDistanceKm: 10 }
+  }
 ] as const;
 
 describe('rank definitions', () => {

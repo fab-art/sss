@@ -9,7 +9,10 @@ export const RANKS: Rank[] = [
 ];
 
 export function getRankForXp(totalXp: number): Rank {
-  return RANKS.reduce((current, candidate) => (totalXp >= candidate.minXp ? candidate : current), RANKS[0]);
+  return RANKS.reduce(
+    (current, candidate) => (totalXp >= candidate.minXp ? candidate : current),
+    RANKS[0]
+  );
 }
 
 export function getNextRank(totalXp: number): Rank | undefined {

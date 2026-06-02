@@ -1,4 +1,4 @@
-import type { Table } from 'dexie';
+import type { Table, UpdateSpec } from 'dexie';
 import { failure, success, type PersistenceResult } from './errors';
 
 export type RepositoryTableName = 'users' | 'workouts' | 'achievements' | 'progression';
@@ -16,7 +16,7 @@ export const toDomainList = <T>(rows: T[]): T[] => rows.map((row) => structuredC
 export const createRecord = async <T extends { id: string }>(
   table: Table<T, string>,
   tableName: RepositoryTableName,
-  record: T,
+  record: T
 ): Promise<PersistenceResult<T>> => {
   try {
     await table.add(structuredClone(record));
@@ -29,7 +29,7 @@ export const createRecord = async <T extends { id: string }>(
 export const getRecord = async <T extends { id: string }>(
   table: Table<T, string>,
   tableName: RepositoryTableName,
-  id: string,
+  id: string
 ): Promise<PersistenceResult<T | undefined>> => {
   try {
     return success(toDomain(await table.get(id)));
@@ -40,7 +40,7 @@ export const getRecord = async <T extends { id: string }>(
 
 export const getAllRecords = async <T extends { id: string }>(
   table: Table<T, string>,
-  tableName: RepositoryTableName,
+  tableName: RepositoryTableName
 ): Promise<PersistenceResult<T[]>> => {
   try {
     return success(toDomainList(await table.toArray()));
@@ -53,10 +53,10 @@ export const updateRecord = async <T extends { id: string }>(
   table: Table<T, string>,
   tableName: RepositoryTableName,
   id: string,
-  changes: Partial<Omit<T, 'id'>>,
+  changes: Partial<Omit<T, 'id'>>
 ): Promise<PersistenceResult<T | undefined>> => {
   try {
-    await table.update(id, structuredClone(changes));
+    await table.update(id, structuredClone(changes) as unknown as UpdateSpec<T>);
     return success(toDomain(await table.get(id)));
   } catch (error) {
     return failure('update', tableName, error);
@@ -66,7 +66,7 @@ export const updateRecord = async <T extends { id: string }>(
 export const deleteRecord = async <T extends { id: string }>(
   table: Table<T, string>,
   tableName: RepositoryTableName,
-  id: string,
+  id: string
 ): Promise<PersistenceResult<void>> => {
   try {
     await table.delete(id);

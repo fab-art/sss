@@ -11,15 +11,22 @@ export function AchievementList() {
         {achievementDefinitions.map((achievement) => {
           const isUnlocked = unlockedIds.has(achievement.id);
           return (
-            <article key={achievement.id} className="rounded-2xl border border-white/10 bg-white/5 p-4">
+            <article
+              key={achievement.id}
+              className="rounded-2xl border border-white/10 bg-white/5 p-4"
+            >
               <div className="flex items-start justify-between gap-3">
                 <div>
                   <h3 className="font-bold text-white">{achievement.title}</h3>
                   <p className="mt-1 text-sm text-slate-400">{achievement.description}</p>
                 </div>
-                <span className={isUnlocked ? 'text-xl' : 'grayscale'}>{isUnlocked ? '🏅' : '🔒'}</span>
+                <span className={isUnlocked ? 'text-xl' : 'grayscale'}>
+                  {isUnlocked ? '🏅' : '🔒'}
+                </span>
               </div>
-              <p className="mt-3 text-sm font-semibold text-orange-200">+{achievement.xpReward} XP</p>
+              <p className="mt-3 text-sm font-semibold text-orange-200">
+                +{achievement.xpReward} XP
+              </p>
             </article>
           );
         })}

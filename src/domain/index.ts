@@ -50,15 +50,12 @@ export type Progression = Readonly<{
   progressedAt: Date;
 }>;
 
-const createRank = (
-  rankNumber: RankNumber,
-  name: string,
-  targetWorkout: WorkoutTarget,
-): Rank => Object.freeze({
-  rankNumber,
-  name,
-  targetWorkout: Object.freeze({ ...targetWorkout }),
-});
+const createRank = (rankNumber: RankNumber, name: string, targetWorkout: WorkoutTarget): Rank =>
+  Object.freeze({
+    rankNumber,
+    name,
+    targetWorkout: Object.freeze({ ...targetWorkout })
+  });
 
 export const RANKS = Object.freeze([
   createRank(1, 'Civilian', { pushups: 5, squats: 5, situps: 5, cardioDistanceKm: 0.5 }),
@@ -68,15 +65,13 @@ export const RANKS = Object.freeze([
   createRank(5, 'Elite', { pushups: 50, squats: 50, situps: 50, cardioDistanceKm: 5 }),
   createRank(6, 'Hero Candidate', { pushups: 70, squats: 70, situps: 70, cardioDistanceKm: 7 }),
   createRank(7, 'Hero', { pushups: 85, squats: 85, situps: 85, cardioDistanceKm: 8.5 }),
-  createRank(8, 'Caped Baldy', { pushups: 100, squats: 100, situps: 100, cardioDistanceKm: 10 }),
+  createRank(8, 'Caped Baldy', { pushups: 100, squats: 100, situps: 100, cardioDistanceKm: 10 })
 ] as const);
 
-export const getRankByNumber = (rankNumber: number): Rank | null => (
-  RANKS.find((rank) => rank.rankNumber === rankNumber) ?? null
-);
+export const getRankByNumber = (rankNumber: number): Rank | null =>
+  RANKS.find((rank) => rank.rankNumber === rankNumber) ?? null;
 
 export const getNextRank = (rankNumber: number): Rank | null => getRankByNumber(rankNumber + 1);
 
-export const getRankWorkout = (rankNumber: number): WorkoutTarget | null => (
-  getRankByNumber(rankNumber)?.targetWorkout ?? null
-);
+export const getRankWorkout = (rankNumber: number): WorkoutTarget | null =>
+  getRankByNumber(rankNumber)?.targetWorkout ?? null;

@@ -3,7 +3,13 @@ import { ACHIEVEMENTS, evaluateAchievements, getAchievementRewardXp } from '../d
 import { applyXp, completeWorkoutProgression, initialProgression } from '../domain/progression';
 import { applyWorkoutToStreak } from '../domain/streak';
 import { calculateWorkoutXp } from '../domain/xp';
-import type { ProgressionState, StreakState, UserAchievement, WorkoutInput, WorkoutRecord } from '../domain/types';
+import type {
+  ProgressionState,
+  StreakState,
+  UserAchievement,
+  WorkoutInput,
+  WorkoutRecord
+} from '../domain/types';
 import {
   getProgression,
   getStreak,
