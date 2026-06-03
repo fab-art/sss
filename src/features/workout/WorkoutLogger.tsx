@@ -1,8 +1,9 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Info, Trophy, ChevronRight, Zap, Target } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
+import type { MuscleGrowth } from '../../domain/types';
 
 export function QuestRewardModal({ onClose }: { onClose: () => void }) {
   const { progression, activeQuest, streak } = useProgressionStore();
@@ -73,6 +74,19 @@ export function WorkoutLogger() {
   const [activeExIdx, setActiveExIdx] = useState(0);
   const [showReward, setShowReward] = useState(false);
 
+  // Performance: Memoize growth projection to prevent redundant O(E*M) calculations
+  // E = number of exercises, M = number of muscle groups per exercise.
+  // This stabilizes the reference for the memoized MuscleGraphic component.
+  const projectedGrowth = useMemo(() => {
+    if (!activeQuest) return null;
+    return activeQuest.exercises.reduce((acc, ex) => {
+      ex.muscleGroups.forEach(mg => {
+        acc[mg.name] = (acc[mg.name] || 0) + (ex.repsLogged ? (ex.repsLogged / (ex.targetReps || 1)) * mg.growthPercentage : 0);
+      });
+      return acc;
+    }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 } as MuscleGrowth);
+  }, [activeQuest]);
+
   if (!activeQuest) return null;
 
   const activeEx = activeQuest.exercises[activeExIdx];
@@ -125,12 +139,7 @@ export function WorkoutLogger() {
           </div>
 
           <div className="w-full max-w-[280px] bg-zinc-900/50 rounded-[2.5rem] p-8 border border-white/5">
-                <MuscleGraphic growth={activeQuest.exercises.reduce((acc, ex) => {
-                    ex.muscleGroups.forEach(mg => {
-                        acc[mg.name] = (acc[mg.name] || 0) + (ex.repsLogged ? (ex.repsLogged / (ex.targetReps || 1)) * mg.growthPercentage : 0);
-                    });
-                    return acc;
-                }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 })} />
+                {projectedGrowth && <MuscleGraphic growth={projectedGrowth} />}
           </div>
       </div>
 
