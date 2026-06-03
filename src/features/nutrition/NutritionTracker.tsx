@@ -87,6 +87,7 @@ export function NutritionTracker() {
               </div>
               <button
                 onClick={() => removeMeal(meal.id)}
+                aria-label={`Remove ${meal.mealType} meal`}
                 className="p-3 text-slate-600 hover:text-red-400 transition"
               >
                 <Trash2 className="w-5 h-5" />
@@ -170,7 +171,7 @@ export function NutritionTracker() {
                 className="fixed inset-0 z-50 flex flex-col bg-slate-950"
               >
                   <header className="p-6 flex justify-between items-center border-b border-white/5">
-                      <button onClick={() => setShowLogModal(false)} className="p-2"><X className="w-6 h-6" /></button>
+                      <button onClick={() => setShowLogModal(false)} aria-label="Close" className="p-2"><X className="w-6 h-6" /></button>
                       <h2 className="text-xl font-black tracking-tight">Log a Meal</h2>
                       <div className="w-10" />
                   </header>
@@ -196,7 +197,7 @@ export function NutritionTracker() {
                                   return (
                                       <button
                                         key={food.id}
-                                        onClick={() => toggleFood(food as any)}
+                                        onClick={() => toggleFood(food as FoodItem)}
                                         className={`flex justify-between items-center p-5 rounded-2xl border transition ${isSelected ? 'bg-orange-500/10 border-orange-500/30' : 'bg-white/5 border-white/5'}`}
                                       >
                                           <div className="text-left">

@@ -19,8 +19,11 @@ import {
   summarizeDailyNutrition,
   RWANDAN_FOOD_PRESETS,
   toMinutes,
-  suggestNextMeal
+  suggestNextMeal,
+  calculateTDEE,
+  calculateNutritionTargets
 } from '../domain/nutrition';
+import { useUserStore } from './useUserStore';
 import { createId } from '../lib/id';
 import { nowIso } from '../lib/date';
 
@@ -45,18 +48,19 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
   isHydrated: false,
 
   hydrate: async (userId, date) => {
-    let [protocol, mealEntries, foodPresets] = await Promise.all([
+    const [protocol, mealEntries, foodPresets] = await Promise.all([
       getFastingProtocol(userId),
       listMealEntriesByDate(date),
       listRwandanFoodPresets()
     ]);
 
+    let finalFoodPresets = foodPresets;
     if (foodPresets.length === 0) {
       await bulkSaveRwandanFoodPresets(RWANDAN_FOOD_PRESETS);
-      foodPresets = RWANDAN_FOOD_PRESETS;
+      finalFoodPresets = RWANDAN_FOOD_PRESETS;
     }
 
-    set({ protocol, mealEntries, foodPresets, isHydrated: true });
+    set({ protocol, mealEntries, foodPresets: finalFoodPresets, isHydrated: true });
   },
 
   logMeal: async (mealType, foods) => {
@@ -65,9 +69,9 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
     const totalCalories = foods.reduce((sum, f) => sum + f.calories, 0);
 
     // Validate fasting window
-    const { protocol } = get();
+    const currentProtocol = get().protocol;
     let withinFastingWindow = true;
-    if (protocol && protocol.protocolType !== 'none') {
+    if (currentProtocol && currentProtocol.protocolType !== 'none') {
         const nowMin = toMinutes(timestamp.slice(0, 5));
         const startMin = toMinutes(protocol.eatingWindowStart);
         const endMin = toMinutes(protocol.eatingWindowEnd);
@@ -96,7 +100,8 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
 
   removeMeal: async (id) => {
     await deleteMealEntry(id);
-    set({ mealEntries: get().mealEntries.filter(m => m.id !== id) });
+    const currentMealEntries = get().mealEntries;
+    set({ mealEntries: currentMealEntries.filter(m => m.id !== id) });
   },
 
   updateProtocol: async (protocol) => {
@@ -106,13 +111,29 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
 
   getSummary: (workoutCaloriesBurned) => {
     const { mealEntries, protocol } = get();
-    const dailyGoal = 2000; // Default goal
+    const { profile } = useUserStore.getState();
+
+    const tdee = calculateTDEE(
+        profile.age,
+        profile.weight,
+        profile.height,
+        profile.activityLevel,
+        0 // workoutCaloriesBurned handled separately in summarizeDailyNutrition
+    );
+
+    const targets = calculateNutritionTargets(tdee, profile.goal, 500);
+    const dailyGoal = targets.dailyCalories;
+
     const fastingWindow = {
       startTime: protocol?.eatingWindowStart || '12:00',
       endTime: protocol?.eatingWindowEnd || '20:00'
     };
 
-    return summarizeDailyNutrition(mealEntries, workoutCaloriesBurned, dailyGoal, fastingWindow);
+    const summary = summarizeDailyNutrition(mealEntries, workoutCaloriesBurned, dailyGoal, fastingWindow);
+    return {
+        ...summary,
+        targets // Include macro targets in summary
+    };
   },
 
   getSuggestions: () => {

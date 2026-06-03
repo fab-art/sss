@@ -8,11 +8,14 @@ import { NutritionTracker } from '../features/nutrition/NutritionTracker';
 import { useHydrateProgression } from '../hooks/useHydrateProgression';
 import { useProgressionStore } from '../store/useProgressionStore';
 import { useUserStore } from '../store/useUserStore';
+import { useNutritionStore } from '../store/useNutritionStore';
 import { Home, Dumbbell, Utensils, Trophy, User } from 'lucide-react';
 
 export function App() {
   const hasCompletedOnboarding = useUserStore((state) => state.hasCompletedOnboarding);
-  const isHydrated = useProgressionStore((state) => state.isHydrated);
+  const isProgressionHydrated = useProgressionStore((state) => state.isHydrated);
+  const isNutritionHydrated = useNutritionStore((state) => state.isHydrated);
+  const isHydrated = isProgressionHydrated && isNutritionHydrated;
   const [activeTab, setActiveTab] = useState<'home' | 'train' | 'nutrition' | 'wins' | 'profile'>('home');
 
   useHydrateProgression();
@@ -62,7 +65,9 @@ export function App() {
                 return (
                     <button
                         key={tab.id}
-                        onClick={() => setActiveTab(tab.id as any)}
+                        onClick={() => setActiveTab(tab.id as 'home' | 'train' | 'nutrition' | 'wins' | 'profile')}
+                        aria-label={tab.label}
+                        aria-current={isActive ? 'page' : undefined}
                         className={`flex flex-col items-center gap-1 transition ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}
                     >
                         <div className={`p-2 rounded-xl transition ${isActive ? 'bg-cyan-400/10' : ''}`}>

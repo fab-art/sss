@@ -88,14 +88,14 @@ export function WorkoutLogger() {
     <section className="max-w-xl mx-auto min-h-screen bg-black text-white flex flex-col p-6 pb-24">
       {/* Header */}
       <header className="flex justify-between items-center mb-8">
-        <button className="p-2 rounded-full bg-white/5 border border-white/10">
+        <button aria-label="Go back" className="p-2 rounded-full bg-white/5 border border-white/10">
             <ChevronLeft className="w-6 h-6" />
         </button>
         <div className="text-center">
             <h2 className="text-lg font-black tracking-tight">{activeEx.exerciseType.split('-').map(s => s.charAt(0).toUpperCase() + s.slice(1)).join('-')}</h2>
             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{activeEx.targetReps ? 'Strength' : 'Endurance'} Focus</p>
         </div>
-        <button className="p-2 rounded-full bg-white/5 border border-white/10">
+        <button aria-label="Exercise information" className="p-2 rounded-full bg-white/5 border border-white/10">
             <Info className="w-6 h-6" />
         </button>
       </header>
@@ -122,9 +122,11 @@ export function WorkoutLogger() {
       <div className="flex-1 flex flex-col items-center justify-center py-8">
           <div className="relative w-full max-w-[280px]">
             <MuscleGraphic growth={activeQuest.exercises.reduce((acc, ex) => {
-                ex.muscleGroups.forEach(mg => acc[mg.name] = (acc[mg.name] || 0) + (ex.repsLogged ? (ex.repsLogged / (ex.targetReps || 1)) * mg.growthPercentage : 0));
+                ex.muscleGroups.forEach(mg => {
+                    acc[mg.name] = (acc[mg.name] || 0) + (ex.repsLogged ? (ex.repsLogged / (ex.targetReps || 1)) * mg.growthPercentage : 0);
+                });
                 return acc;
-            }, {} as any)} />
+            }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 })} />
 
             <AnimatePresence>
                 {(activeEx.repsLogged || 0) > 0 && (
@@ -172,16 +174,28 @@ export function WorkoutLogger() {
       </div>
 
       <div className="mt-8 space-y-4">
-          <button
-            onClick={() => setActiveExIdx((activeExIdx + 1) % activeQuest.exercises.length)}
-            className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-bold"
-          >
-              Next Exercise
-          </button>
+          {activeExIdx < activeQuest.exercises.length - 1 ? (
+              <button
+                onClick={() => setActiveExIdx(activeExIdx + 1)}
+                className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-bold hover:bg-white/10 transition"
+              >
+                  Next Exercise
+              </button>
+          ) : (
+              !isAllComplete && (
+                  <button
+                    onClick={() => setActiveExIdx(0)}
+                    className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 font-bold hover:bg-white/10 transition"
+                  >
+                      Back to First Exercise
+                  </button>
+              )
+          )}
+
           {isAllComplete && (
               <button
                 onClick={handleCompleteQuest}
-                className="w-full py-5 rounded-2xl bg-emerald-500 text-white font-black text-lg shadow-xl shadow-emerald-500/20"
+                className="w-full py-5 rounded-2xl bg-emerald-500 text-white font-black text-lg shadow-xl shadow-emerald-500/20 active:scale-95 transition"
               >
                   Complete Quest
               </button>
