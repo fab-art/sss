@@ -19,10 +19,6 @@ describe('HeroPath Persistence', () => {
   let db: HeroPathDatabase;
 
   beforeEach(async () => {
-    // Note: repositories currently use the global exported 'db' instance.
-    // For proper isolation in tests, we might want to inject the DB,
-    // but here we'll just clear the global one if possible or rely on unique DB names if HeroPathDatabase allowed it.
-    // Since HeroPathDatabase is hardcoded to 'heropath', we clear it.
     db = new HeroPathDatabase();
     await db.workouts.clear();
     await db.progression.clear();
@@ -39,7 +35,15 @@ describe('HeroPath Persistence', () => {
       totalXp: 1000,
       level: 5,
       rankId: 'squire',
-      workoutsCompleted: 10
+      workoutsCompleted: 10,
+      muscleGrowth: {
+        chest: 10,
+        core: 10,
+        legs: 10,
+        shoulders: 10,
+        back: 10,
+        cardio: 10
+      }
     };
 
     await saveProgression(state);
