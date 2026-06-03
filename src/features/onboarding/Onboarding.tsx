@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { useUserStore } from '../../store/useUserStore';
 import { useNutritionStore } from '../../store/useNutritionStore';
 import { motion, AnimatePresence } from 'framer-motion';
-import { ChevronRight, Dumbbell, Moon, User, Scale, Ruler, Calendar } from 'lucide-react';
+import { ChevronRight, Moon, Shield } from 'lucide-react';
 import type { ActivityLevel, NutritionGoal } from '../../domain/types';
 
 export function Onboarding() {
@@ -40,25 +40,25 @@ export function Onboarding() {
   };
 
   return (
-    <main className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-6">
+    <main className="min-h-screen bg-black text-white flex items-center justify-center p-6 font-sans">
       <AnimatePresence mode="wait">
         {step === 1 && (
           <motion.section
             key="step1"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="max-w-md w-full space-y-8 text-center"
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 1.1 }}
+            className="max-w-md w-full space-y-10 text-center"
           >
-            <div className="w-20 h-20 bg-orange-500 rounded-[2rem] mx-auto flex items-center justify-center shadow-2xl shadow-orange-500/20">
-                <Dumbbell className="w-10 h-10" />
+            <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] mx-auto flex items-center justify-center border border-primary/20 shadow-2xl shadow-primary/10">
+                <Shield className="w-12 h-12 text-primary fill-primary/20" />
             </div>
             <div className="space-y-4">
-                <h1 className="text-5xl font-black tracking-tighter">The Civilian's Path</h1>
-                <p className="text-slate-400 text-lg font-medium leading-relaxed">Every hero began here. Let's begin yours.</p>
+                <h1 className="text-6xl font-black tracking-tighter italic uppercase">HeroPath</h1>
+                <p className="text-zinc-500 text-lg font-medium leading-relaxed px-4 text-balance">The next evolution of your physical potential begins here.</p>
             </div>
-            <button onClick={next} className="w-full py-5 rounded-3xl bg-orange-500 font-black text-lg flex items-center justify-center gap-2 hover:bg-orange-400 transition">
-                Next <ChevronRight className="w-5 h-5" />
+            <button onClick={next} className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 hover:scale-[1.02] active:scale-95 transition-all shadow-2xl shadow-primary/20">
+                Initiate <ChevronRight className="w-6 h-6" />
             </button>
           </motion.section>
         )}
@@ -66,20 +66,17 @@ export function Onboarding() {
         {step === 2 && (
           <motion.section
             key="step2"
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="max-w-md w-full space-y-8"
+            exit={{ opacity: 0, x: -50 }}
+            className="max-w-md w-full space-y-10"
           >
             <div className="space-y-2">
-                <p className="text-orange-500 font-black uppercase tracking-widest text-xs">Step 2 of 5</p>
-                <h2 className="text-4xl font-black tracking-tight">Vitals</h2>
+                <p className="text-primary font-black uppercase tracking-[0.3em] text-[10px]">Phase 01</p>
+                <h2 className="text-4xl font-black tracking-tight uppercase italic">Biometrics</h2>
             </div>
             <div className="space-y-4">
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-500">
-                        <Calendar className="w-6 h-6" />
-                    </div>
                     <input
                         id="age-input"
                         type="number"
@@ -94,14 +91,11 @@ export function Onboarding() {
                             if (!isNaN(val)) setAge(val);
                         }}
                         placeholder="Age"
-                        className="w-full py-6 pl-16 pr-6 rounded-3xl bg-slate-900 border border-white/10 text-xl font-bold focus:border-orange-500 transition outline-none"
+                        className="w-full py-8 px-8 rounded-3xl bg-zinc-900 border border-white/5 text-2xl font-black focus:border-primary transition-all outline-none"
                     />
-                    <label htmlFor="age-input" className="absolute -top-3 left-6 bg-slate-950 px-2 text-[10px] font-black text-slate-500 uppercase">Age</label>
+                    <label htmlFor="age-input" className="absolute -top-3 left-6 bg-black px-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest border border-white/5 rounded-full">Age</label>
                 </div>
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-500">
-                        <Scale className="w-6 h-6" />
-                    </div>
                     <input
                         id="weight-input"
                         type="number"
@@ -116,14 +110,11 @@ export function Onboarding() {
                             if (!isNaN(val)) setWeight(val);
                         }}
                         placeholder="Weight (lbs)"
-                        className="w-full py-6 pl-16 pr-6 rounded-3xl bg-slate-900 border border-white/10 text-xl font-bold focus:border-orange-500 transition outline-none"
+                        className="w-full py-8 px-8 rounded-3xl bg-zinc-900 border border-white/5 text-2xl font-black focus:border-primary transition-all outline-none"
                     />
-                    <label htmlFor="weight-input" className="absolute -top-3 left-6 bg-slate-950 px-2 text-[10px] font-black text-slate-500 uppercase">Weight (lbs)</label>
+                    <label htmlFor="weight-input" className="absolute -top-3 left-6 bg-black px-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest border border-white/5 rounded-full">Weight (lbs)</label>
                 </div>
                 <div className="relative">
-                    <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-500">
-                        <Ruler className="w-6 h-6" />
-                    </div>
                     <input
                         id="height-input"
                         type="number"
@@ -138,13 +129,13 @@ export function Onboarding() {
                             if (!isNaN(val)) setHeight(val);
                         }}
                         placeholder="Height (inches)"
-                        className="w-full py-6 pl-16 pr-6 rounded-3xl bg-slate-900 border border-white/10 text-xl font-bold focus:border-orange-500 transition outline-none"
+                        className="w-full py-8 px-8 rounded-3xl bg-zinc-900 border border-white/5 text-2xl font-black focus:border-primary transition-all outline-none"
                     />
-                    <label htmlFor="height-input" className="absolute -top-3 left-6 bg-slate-950 px-2 text-[10px] font-black text-slate-500 uppercase">Height (inches)</label>
+                    <label htmlFor="height-input" className="absolute -top-3 left-6 bg-black px-3 text-[10px] font-black text-zinc-500 uppercase tracking-widest border border-white/5 rounded-full">Height (in)</label>
                 </div>
             </div>
-            <button onClick={next} className="w-full py-5 rounded-3xl bg-orange-500 font-black text-lg flex items-center justify-center gap-2 hover:bg-orange-400 transition">
-                Next <ChevronRight className="w-5 h-5" />
+            <button onClick={next} className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-primary/20">
+                Continue <ChevronRight className="w-6 h-6" />
             </button>
           </motion.section>
         )}
@@ -152,38 +143,38 @@ export function Onboarding() {
         {step === 3 && (
           <motion.section
             key="step3"
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="max-w-md w-full space-y-8"
+            exit={{ opacity: 0, x: -50 }}
+            className="max-w-md w-full space-y-10"
           >
             <div className="space-y-2">
-                <p className="text-orange-500 font-black uppercase tracking-widest text-xs">Step 3 of 5</p>
-                <h2 className="text-4xl font-black tracking-tight">Fitness Level</h2>
+                <p className="text-primary font-black uppercase tracking-[0.3em] text-[10px]">Phase 02</p>
+                <h2 className="text-4xl font-black tracking-tight uppercase italic">Directives</h2>
             </div>
-            <div className="space-y-4">
-                <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
-                    <p className="font-bold text-slate-300">How active are you?</p>
+            <div className="space-y-6">
+                <div className="space-y-4">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] px-2">Current Load</p>
                     <div className="grid grid-cols-1 gap-2">
                         {(['sedentary', 'light', 'moderate', 'active', 'veryActive'] as ActivityLevel[]).map(levelId => (
                             <button
                                 key={levelId}
                                 onClick={() => setActivityLevel(levelId)}
-                                className={`py-4 rounded-2xl border font-bold transition capitalize ${activityLevel === levelId ? 'bg-orange-500 border-orange-500' : 'bg-white/5 border-white/5 hover:border-orange-500/50'}`}
+                                className={`py-4 rounded-2xl border font-black text-xs uppercase tracking-widest transition-all ${activityLevel === levelId ? 'bg-primary border-primary text-black' : 'bg-zinc-900 border-white/5 text-zinc-500 hover:border-primary/50'}`}
                             >
                                 {levelId.replace(/([A-Z])/g, ' $1')}
                             </button>
                         ))}
                     </div>
                 </div>
-                <div className="p-6 rounded-3xl bg-white/5 border border-white/10 space-y-4">
-                    <p className="font-bold text-slate-300">What is your goal?</p>
+                <div className="space-y-4">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] px-2">Primary Objective</p>
                     <div className="grid grid-cols-1 gap-2">
                         {(['weightLoss', 'maintenance', 'muscleGain'] as NutritionGoal[]).map(gId => (
                             <button
                                 key={gId}
                                 onClick={() => setGoal(gId)}
-                                className={`py-4 rounded-2xl border font-bold transition capitalize ${goal === gId ? 'bg-cyan-500 border-cyan-500' : 'bg-white/5 border-white/5 hover:border-cyan-500/50'}`}
+                                className={`py-4 rounded-2xl border font-black text-xs uppercase tracking-widest transition-all ${goal === gId ? 'bg-zinc-100 border-zinc-100 text-black' : 'bg-zinc-900 border-white/5 text-zinc-500 hover:border-zinc-100/50'}`}
                             >
                                 {gId.replace(/([A-Z])/g, ' $1')}
                             </button>
@@ -191,8 +182,8 @@ export function Onboarding() {
                     </div>
                 </div>
             </div>
-            <button onClick={next} className="w-full py-5 rounded-3xl bg-orange-500 font-black text-lg flex items-center justify-center gap-2 hover:bg-orange-400 transition">
-                Next <ChevronRight className="w-5 h-5" />
+            <button onClick={next} className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-primary/20">
+                Seal Directive <ChevronRight className="w-6 h-6" />
             </button>
           </motion.section>
         )}
@@ -200,40 +191,40 @@ export function Onboarding() {
         {step === 4 && (
           <motion.section
             key="step4"
-            initial={{ opacity: 0, x: 20 }}
+            initial={{ opacity: 0, x: 50 }}
             animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="max-w-md w-full space-y-8"
+            exit={{ opacity: 0, x: -50 }}
+            className="max-w-md w-full space-y-10"
           >
             <div className="space-y-2">
-                <p className="text-orange-500 font-black uppercase tracking-widest text-xs">Step 4 of 5</p>
-                <h2 className="text-4xl font-black tracking-tight">Fasting Choice</h2>
-                <p className="text-slate-400">Do you want to track nutrition with intermittent fasting?</p>
+                <p className="text-primary font-black uppercase tracking-[0.3em] text-[10px]">Phase 03</p>
+                <h2 className="text-4xl font-black tracking-tight uppercase italic">Fasting</h2>
+                <p className="text-zinc-500 font-medium">Select your metabolic protocol.</p>
             </div>
             <div className="space-y-3">
                 {[
-                    { id: 'none', title: 'No tracking', desc: 'Eat all day' },
-                    { id: '16:8', title: '16:8 Protocol', desc: 'Standard protocol' },
-                    { id: '14:10', title: '14:10 Protocol', desc: 'Moderate fasting' },
-                    { id: '18:6', title: '18:6 Protocol', desc: 'Aggressive fasting' }
+                    { id: 'none', title: 'Standard', desc: 'Continuous intake' },
+                    { id: '16:8', title: 'Tactical', desc: '16h Fast / 8h Eat' },
+                    { id: '14:10', title: 'Balanced', desc: '14h Fast / 10h Eat' },
+                    { id: '18:6', title: 'Aggressive', desc: '18h Fast / 6h Eat' }
                 ].map(p => (
                     <button
                         key={p.id}
-                                onClick={() => setFasting(p.id as 'none' | '16:8' | '14:10' | '18:6')}
-                        className={`w-full p-6 rounded-3xl border text-left transition flex items-center gap-4 ${fasting === p.id ? 'bg-indigo-500/10 border-indigo-500' : 'bg-white/5 border-white/5'}`}
+                        onClick={() => setFasting(p.id as 'none' | '16:8' | '14:10' | '18:6')}
+                        className={`w-full p-6 rounded-3xl border transition-all flex items-center gap-5 ${fasting === p.id ? 'bg-primary/10 border-primary text-primary' : 'bg-zinc-900 border-white/5 text-zinc-500'}`}
                     >
-                        <div className={`w-12 h-12 rounded-2xl flex items-center justify-center ${fasting === p.id ? 'bg-indigo-500 text-white' : 'bg-white/10 text-slate-500'}`}>
-                            <Moon className="w-6 h-6" />
+                        <div className={`w-14 h-14 rounded-2xl flex items-center justify-center ${fasting === p.id ? 'bg-primary text-black' : 'bg-black text-zinc-700'}`}>
+                            <Moon className="w-7 h-7 fill-current" />
                         </div>
-                        <div>
-                            <p className="font-black text-lg">{p.title}</p>
-                            <p className="text-sm text-slate-500">{p.desc}</p>
+                        <div className="text-left">
+                            <p className="font-black text-lg uppercase italic leading-none mb-1">{p.title}</p>
+                            <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{p.desc}</p>
                         </div>
                     </button>
                 ))}
             </div>
-            <button onClick={next} className="w-full py-5 rounded-3xl bg-orange-500 font-black text-lg flex items-center justify-center gap-2 hover:bg-orange-400 transition">
-                Next <ChevronRight className="w-5 h-5" />
+            <button onClick={next} className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest flex items-center justify-center gap-3 shadow-2xl shadow-primary/20">
+                Commit <ChevronRight className="w-6 h-6" />
             </button>
           </motion.section>
         )}
@@ -241,29 +232,26 @@ export function Onboarding() {
         {step === 5 && (
           <motion.section
             key="step5"
-            initial={{ opacity: 0, x: 20 }}
-            animate={{ opacity: 1, x: 0 }}
-            exit={{ opacity: 0, x: -20 }}
-            className="max-w-md w-full space-y-8"
+            initial={{ opacity: 0, scale: 1.1 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.9 }}
+            className="max-w-md w-full space-y-10"
           >
-            <div className="space-y-2">
-                <p className="text-orange-500 font-black uppercase tracking-widest text-xs">Final Step</p>
-                <h2 className="text-4xl font-black tracking-tight">Name your hero</h2>
+            <div className="space-y-4 text-center">
+                <p className="text-primary font-black uppercase tracking-[0.3em] text-[10px]">Final Initialization</p>
+                <h2 className="text-5xl font-black tracking-tighter uppercase italic">Hero Identity</h2>
             </div>
             <div className="relative">
-                <div className="absolute inset-y-0 left-6 flex items-center pointer-events-none text-slate-500">
-                    <User className="w-6 h-6" />
-                </div>
                 <input
                     autoFocus
                     value={name}
                     onChange={e => setName(e.target.value)}
-                    placeholder="Enter your hero name"
-                    className="w-full py-6 pl-16 pr-6 rounded-3xl bg-slate-900 border border-white/10 text-xl font-bold focus:border-orange-500 transition outline-none"
+                    placeholder="ENTER CODENAME"
+                    className="w-full py-10 px-8 rounded-3xl bg-zinc-900 border border-white/5 text-3xl font-black text-center focus:border-primary transition-all outline-none placeholder:text-zinc-800"
                 />
             </div>
-            <button onClick={handleFinish} className="w-full py-6 rounded-3xl bg-orange-500 font-black text-xl shadow-2xl shadow-orange-500/20 hover:bg-orange-400 transition">
-                Create Profile
+            <button onClick={handleFinish} className="w-full py-8 rounded-[3rem] bg-primary text-black font-black text-xl uppercase tracking-[0.2em] shadow-2xl shadow-primary/30 hover:scale-[1.02] active:scale-95 transition-all">
+                Initialize Profile
             </button>
           </motion.section>
         )}
