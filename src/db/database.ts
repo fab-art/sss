@@ -4,10 +4,11 @@ import type {
   StreakState,
   UserAchievement,
   WorkoutRecord,
-  FastingSession,
-  Meal,
-  NutritionProfile,
-  FoodPreset
+  DailyQuest,
+  RunningProgress,
+  RwandanFoodPreset,
+  MealEntry,
+  FastingProtocol
 } from '../domain/types';
 
 export type SingletonRecord<T> = {
@@ -21,14 +22,16 @@ export class HeroPathDatabase extends Dexie {
   streak!: Table<SingletonRecord<StreakState>, 'current'>;
   achievements!: Table<UserAchievement, string>;
 
-  // Nutrition & Fasting
-  meals!: Table<Meal, string>;
-  fastingSessions!: Table<FastingSession, string>;
-  nutritionProfile!: Table<NutritionProfile, string>;
-  foodPresets!: Table<FoodPreset, string>;
+  // V2 Tables
+  dailyQuests!: Table<DailyQuest, string>;
+  runningProgress!: Table<RunningProgress, string>;
+  rwandanFoodPresets!: Table<RwandanFoodPreset, string>;
+  mealEntries!: Table<MealEntry, string>;
+  fastingProtocols!: Table<FastingProtocol, string>;
 
   constructor() {
     super('heropath');
+
     this.version(1).stores({
       workouts: 'id, completedAt',
       progression: 'id',
@@ -41,6 +44,14 @@ export class HeroPathDatabase extends Dexie {
       fastingSessions: 'date',
       nutritionProfile: 'userId',
       foodPresets: 'id, name'
+    });
+
+    this.version(3).stores({
+      dailyQuests: 'id, date, userId',
+      runningProgress: 'userId',
+      rwandanFoodPresets: 'id, name, category',
+      mealEntries: 'id, date, userId',
+      fastingProtocols: 'userId'
     });
   }
 }

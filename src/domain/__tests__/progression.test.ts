@@ -1,19 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { evaluateAchievements, getAchievementRewardXp } from '../achievements';
 import {
+  applyQuestRewards,
+  initialProgression,
+  type PerformanceEntry,
+  type ProgressionInput,
   buildProgression,
   calculateConsistencyScore,
   calculateFatigueScore,
-  completeWorkoutProgression,
-  HIGH_FATIGUE_THRESHOLD,
-  initialProgression,
-  type PerformanceEntry,
-  type ProgressionInput
+  HIGH_FATIGUE_THRESHOLD
 } from '../progression';
 import { getRankForXp } from '../ranks';
 import { applyWorkoutToStreak } from '../streak';
 import { calculateWorkoutXp, getLevelForXp } from '../xp';
-import type { WorkoutRecord } from '../types';
+import type { WorkoutRecord, DailyQuest } from '../types';
 
 describe('HeroPath domain rules', () => {
   it('calculates deterministic XP from workout inputs', () => {
@@ -33,10 +33,33 @@ describe('HeroPath domain rules', () => {
     expect(getRankForXp(1_500).id).toBe('guardian');
   });
 
-  it('increments workout count while applying XP', () => {
-    const next = completeWorkoutProgression(initialProgression, 500);
+  it('applies quest rewards correctly', () => {
+    const quest: DailyQuest = {
+        id: 'q1',
+        date: '2026-06-02',
+        userId: 'u1',
+        rank: 1,
+        questName: 'Test Quest',
+        exercises: [
+            {
+                id: 'ex1',
+                questId: 'q1',
+                exerciseType: 'push-ups',
+                targetReps: 10,
+                repsLogged: 10,
+                state: 'completed',
+                muscleGroups: [{ name: 'chest', intensity: 'primary', growthPercentage: 5 }],
+                xpContribution: 50
+            }
+        ],
+        xpReward: 100,
+        isCompleted: true
+    };
+    const next = applyQuestRewards(initialProgression, quest);
 
-    expect(next).toMatchObject({ totalXp: 500, level: 3, rankId: 'squire', workoutsCompleted: 1 });
+    expect(next.totalXp).toBe(100);
+    expect(next.workoutsCompleted).toBe(1);
+    expect(next.muscleGrowth.chest).toBe(5);
   });
 
   it('updates streaks once per UTC day', () => {
@@ -70,7 +93,8 @@ describe('HeroPath domain rules', () => {
         muscleGrowth: initialProgression.muscleGrowth
       },
       streak: { current: 1, longest: 1, lastWorkoutDate: '2026-05-28' },
-      workouts
+      workouts,
+      quests: []
     };
 
     const unlocked = evaluateAchievements(snapshot, [], '2026-05-28T12:00:00.000Z');

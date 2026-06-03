@@ -2,10 +2,9 @@ import { describe, expect, it } from 'vitest';
 import {
   calculateTDEE,
   calculateNutritionTargets,
-  validateMealAgainstFastingWindow,
   summarizeDailyNutrition
 } from '../nutrition';
-import type { Meal } from '../types';
+import type { MealEntry } from '../types';
 
 describe('Nutrition domain logic', () => {
   it('calculates TDEE correctly', () => {
@@ -22,24 +21,24 @@ describe('Nutrition domain logic', () => {
     expect(targets.fatG).toBe(44);      // 20% of 2000 / 9
   });
 
-  it('validates meal against fasting window', () => {
-    const start = '12:00';
-    const end = '20:00';
-
-    expect(validateMealAgainstFastingWindow('13:00', start, end).valid).toBe(true);
-    expect(validateMealAgainstFastingWindow('21:00', start, end).valid).toBe(false);
-    expect(validateMealAgainstFastingWindow('11:00', start, end).valid).toBe(false);
-  });
-
   it('summarizes daily nutrition correctly', () => {
-    const meals: Meal[] = [
-      { id: '1', date: '2026-06-02', timestamp: '12:30', foodName: 'Oatmeal', servingSize: '1 cup', calories: 350, protein: 12, carbs: 58, fat: 8, foodCategory: 'breakfast', source: 'preset' }
+    const mealEntries: MealEntry[] = [
+      {
+          id: '1',
+          userId: 'default',
+          date: '2026-06-02',
+          timestamp: '12:30:00',
+          mealType: 'lunch',
+          foods: [{ id: 'f1', name: 'Oatmeal', category: 'staple', calories: 350, portion: '1 cup', isRwandanFood: false }],
+          totalCalories: 350,
+          withinFastingWindow: true
+      }
     ];
-    const targets = { dailyCalories: 2000, proteinG: 150, carbsG: 200, fatG: 60 };
-    const summary = summarizeDailyNutrition(meals, 300, targets);
 
-    expect(summary.caloriesConsumed).toBe(350);
-    expect(summary.calorieDeficit).toBe(-50); // 300 - 350
-    expect(summary.macroStatus.protein).toBe('under');
+    const summary = summarizeDailyNutrition(mealEntries, 300, 2000, { startTime: '12:00', endTime: '20:00' });
+
+    expect(summary.totalCaloriesConsumed).toBe(350);
+    expect(summary.remainingCalories).toBe(1950); // (2000 + 300) - 350
+    expect(summary.deficit).toBe(1950); // 300 - (350 - 2000) = 1950
   });
 });
