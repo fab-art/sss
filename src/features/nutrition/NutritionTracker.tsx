@@ -93,8 +93,32 @@ export function NutritionTracker() {
                 <Trash2 className="w-5 h-5" />
               </button>
             </motion.div>
-          ))
-        )}
+          ) : (
+            meals.map((meal) => (
+              <motion.div
+                key={meal.id}
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: 20 }}
+                className="rounded-2xl bg-white/5 border border-white/10 p-4 flex justify-between items-center"
+              >
+                <div>
+                  <div className="font-bold text-white">{meal.foodName}</div>
+                  <div className="text-xs text-slate-400">
+                    {meal.timestamp} • {meal.calories} cal | P: {meal.protein}g C: {meal.carbs}g F: {meal.fat}g
+                  </div>
+                </div>
+                <button
+                  onClick={() => removeMeal(meal.id)}
+                  aria-label={`Remove ${meal.foodName}`}
+                  className="p-2 text-slate-500 hover:text-red-400 transition"
+                >
+                  <Trash2 className="w-4 h-4" />
+                </button>
+              </motion.div>
+            ))
+          )}
+        </AnimatePresence>
       </div>
 
       {/* Actions */}
@@ -111,8 +135,8 @@ export function NutritionTracker() {
           className="flex items-center justify-center gap-2 rounded-2xl bg-indigo-600 p-5 font-black text-white shadow-lg shadow-indigo-600/20 hover:bg-indigo-500 transition"
         >
           <Lightbulb className="w-5 h-5" />
-          Suggestions
-        </button>
+          {showSoon ? 'Coming Soon!' : 'Suggestions'}
+        </motion.button>
       </div>
 
       {/* Suggestions Modal */}
