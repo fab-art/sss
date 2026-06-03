@@ -5,7 +5,7 @@ import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { useUserStore } from '../../store/useUserStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
-import { Moon, Flame, Footprints, CheckCircle2, Circle } from 'lucide-react';
+import { Flame, Footprints, CheckCircle2, Trophy } from 'lucide-react';
 import { useNutritionStore } from '../../store/useNutritionStore';
 import type { DailyNutritionSummary } from '../../domain/types';
 
@@ -17,7 +17,7 @@ interface DashboardProps {
 export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) {
   const { heroName } = useUserStore();
   const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
-  const { getSummary, protocol } = useNutritionStore();
+  const { getSummary } = useNutritionStore();
 
   const currentRank = getRankForXp(progression.totalXp);
   const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
@@ -27,9 +27,6 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
     ? (nutritionSummary.totalCaloriesConsumed / nutritionSummary.totalAllowance) * 100
     : 0;
 
-  const questProgress = activeQuest
-    ? (activeQuest.exercises.filter(ex => ex.state === 'completed').length / activeQuest.exercises.length) * 100
-    : 0;
 
   const [currentSteps, setCurrentSteps] = useState(3842); // This would normally come from a pedometer API
   const stepPercent = runningProgress.stepGoal
@@ -42,249 +39,175 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
   };
 
   return (
-    <section className="max-w-xl mx-auto space-y-6 pb-24">
-      {/* Header */}
+    <section className="max-w-xl mx-auto space-y-8 pb-24">
+      {/* Premium Header */}
       <header className="flex justify-between items-center px-2">
-        <div>
-            <h1 className="text-xl font-black text-white tracking-tight">HeroPath</h1>
-            <p className="text-xs font-bold text-slate-500 uppercase">{currentRank.title} • Rank {activeQuest?.rank || 1}</p>
+        <div className="flex items-center gap-3">
+            <div className="w-12 h-12 rounded-2xl bg-primary/10 border border-primary/20 flex items-center justify-center text-2xl">
+                {currentRank.emblem}
+            </div>
+            <div>
+                <h1 className="text-xl font-black text-white tracking-tight leading-none mb-1">{heroName}</h1>
+                <p className="text-[10px] font-black text-primary uppercase tracking-[0.2em]">{currentRank.title}</p>
+            </div>
         </div>
-        <div className="flex items-center gap-2 bg-orange-500/10 border border-orange-500/20 rounded-full px-4 py-1">
-            <Flame className="w-4 h-4 text-orange-500 fill-orange-500" />
-            <span className="text-sm font-black text-orange-500">{streak.current} day streak</span>
+        <div className="flex items-center gap-2 bg-zinc-900 border border-white/5 rounded-2xl px-4 py-2 shadow-xl">
+            <Flame className="w-4 h-4 text-primary fill-primary" />
+            <span className="text-sm font-black text-white">{streak.current}d</span>
         </div>
       </header>
 
-      {/* Rank Card */}
+      {/* Level Card */}
       <motion.div
-        initial={{ opacity: 0, y: 20 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="rounded-[2.5rem] bg-slate-900 border border-white/5 p-8 shadow-2xl relative overflow-hidden"
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        className="rounded-[2.5rem] bg-zinc-900 border border-white/5 p-8 relative overflow-hidden shadow-2xl"
       >
         <div className="relative z-10">
-            <div className="flex justify-between items-end mb-4">
+            <div className="flex justify-between items-center mb-6">
                 <div>
-                    <h2 className="text-2xl font-black text-cyan-400">{currentRank.title}</h2>
-                    <p className="text-sm font-bold text-slate-400">Level {progression.level} • {getXpIntoLevel(progression.totalXp)}/{getXpRequiredForNextLevel()} XP</p>
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1">Current Progress</p>
+                    <h2 className="text-2xl font-black text-white">Level {progression.level}</h2>
                 </div>
-                <div className="text-xs font-black text-orange-400 uppercase tracking-widest flex items-center gap-1">
-                    {heroName}
+                <div className="text-right">
+                    <p className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.2em] mb-1">XP to Rank up</p>
+                    <p className="text-sm font-bold text-primary">{getXpRequiredForNextLevel() - getXpIntoLevel(progression.totalXp)} XP</p>
                 </div>
             </div>
-            <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
+            <div className="h-4 w-full bg-black rounded-full overflow-hidden p-1 border border-white/5">
                 <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${levelProgress}%` }}
-                    className="h-full bg-cyan-500 shadow-[0_0_12px_rgba(6,182,212,0.5)]"
+                    className="h-full bg-gradient-to-r from-primary to-accent rounded-full shadow-[0_0_15px_rgba(34,197,94,0.4)]"
                 />
             </div>
         </div>
-        <div className="absolute top-0 right-0 p-4 opacity-10 text-8xl grayscale">{currentRank.emblem}</div>
+        <div className="absolute -top-12 -right-8 text-[12rem] font-black text-white/[0.03] pointer-events-none">{progression.level}</div>
       </motion.div>
 
-      {/* Today's Quest */}
-      <div className="space-y-4">
-          <div className="flex justify-between items-center px-2">
-              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Today's Quest</h3>
-              <span className="text-xs font-bold text-cyan-400">
-                  {activeQuest?.exercises.filter(ex => ex.state === 'completed').length || 0} / {activeQuest?.exercises.length || 0} done
-              </span>
+      {/* Grid of Stats */}
+      <div className="grid grid-cols-2 gap-4">
+          {/* Steps */}
+          <div className="rounded-[2rem] bg-zinc-900 border border-white/5 p-6 space-y-4 shadow-xl">
+              <div className="flex justify-between items-center">
+                  <div className="p-3 rounded-2xl bg-primary/10 text-primary">
+                    <Footprints className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Steps</span>
+              </div>
+              <div>
+                  <p className="text-2xl font-black text-white">{currentSteps.toLocaleString()}</p>
+                  <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Goal: {runningProgress.stepGoal?.toLocaleString()}</p>
+              </div>
+              <div className="h-1.5 w-full bg-black rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${stepPercent}%` }}
+                    className="h-full bg-primary"
+                  />
+              </div>
+              <div className="flex gap-2">
+                  <button onClick={() => setCurrentSteps(s => s + 500)} className="flex-1 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-white/10 transition">+</button>
+                  <button onClick={() => syncSteps(currentSteps)} className="flex-1 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition">Sync</button>
+              </div>
           </div>
-          <div className="rounded-[2.5rem] bg-slate-900 border border-white/5 p-6 space-y-4">
+
+          {/* Calories */}
+          <div className="rounded-[2rem] bg-zinc-900 border border-white/5 p-6 space-y-4 shadow-xl">
+              <div className="flex justify-between items-center">
+                  <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-500">
+                    <Flame className="w-5 h-5" />
+                  </div>
+                  <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Kcal</span>
+              </div>
+              <div>
+                  <p className="text-2xl font-black text-white">{nutritionSummary?.totalCaloriesConsumed || 0}</p>
+                  <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest mt-1">Left: {nutritionSummary?.remainingCalories || 0}</p>
+              </div>
+              <div className="h-1.5 w-full bg-black rounded-full overflow-hidden">
+                  <motion.div
+                    initial={{ width: 0 }}
+                    animate={{ width: `${caloriePercent}%` }}
+                    className="h-full bg-orange-500"
+                  />
+              </div>
+              <button onClick={onViewNutrition} className="w-full py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-white/10 transition">Log Meal</button>
+          </div>
+      </div>
+
+      {/* Quest Card */}
+      <div className="space-y-4">
+          <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Active Challenge</h3>
+          <div className="rounded-[2.5rem] bg-zinc-900 border border-white/5 p-8 shadow-xl">
             {!activeQuest ? (
-                <button
-                  onClick={handleStart}
-                  className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black hover:bg-white/10 transition"
-                >
-                    Start Training
-                </button>
+                <div className="text-center space-y-6 py-4">
+                    <div className="w-16 h-16 bg-primary/10 text-primary rounded-2xl flex items-center justify-center mx-auto">
+                        <Trophy className="w-8 h-8" />
+                    </div>
+                    <div className="space-y-2">
+                        <h4 className="text-xl font-black text-white">Daily Quest Ready</h4>
+                        <p className="text-sm text-zinc-500 font-medium px-8 text-balance">Complete today's routine to build your physique and rank up.</p>
+                    </div>
+                    <button
+                        onClick={handleStart}
+                        className="w-full py-4 rounded-2xl bg-primary text-black font-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-[0.98] transition"
+                    >
+                        Begin Training
+                    </button>
+                </div>
             ) : (
-                <>
+                <div className="space-y-6">
+                    <div className="flex justify-between items-center">
+                        <h4 className="font-black text-white">{activeQuest.questName}</h4>
+                        <span className="text-[10px] font-black text-primary uppercase bg-primary/10 px-3 py-1 rounded-full">Rank {activeQuest.rank}</span>
+                    </div>
                     <div className="space-y-3">
                         {activeQuest.exercises.map(ex => (
-                            <div key={ex.id} className="flex items-center gap-3">
-                                {ex.state === 'completed' ? (
-                                    <CheckCircle2 className="w-5 h-5 text-emerald-500" />
-                                ) : (
-                                    <Circle className="w-5 h-5 text-slate-700" />
-                                )}
-                                <span className={`text-sm font-bold ${ex.state === 'completed' ? 'text-slate-300' : 'text-white'}`}>
-                                    {ex.exerciseType} ({ex.targetReps || ex.targetDistance} {ex.targetReps ? 'reps' : 'm'})
-                                </span>
+                            <div key={ex.id} className="flex items-center justify-between p-4 bg-black/40 rounded-2xl border border-white/5">
+                                <div className="flex items-center gap-3">
+                                    {ex.state === 'completed' ? (
+                                        <CheckCircle2 className="w-5 h-5 text-primary" />
+                                    ) : (
+                                        <div className="w-5 h-5 rounded-full border-2 border-zinc-800" />
+                                    )}
+                                    <span className={`text-sm font-black ${ex.state === 'completed' ? 'text-zinc-500 line-through' : 'text-white'}`}>
+                                        {ex.exerciseType.split('-').join(' ')}
+                                    </span>
+                                </div>
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase">{ex.targetReps || ex.targetDistance} {ex.targetReps ? 'reps' : 'm'}</span>
                             </div>
                         ))}
                     </div>
-                    <div className="h-2 w-full bg-white/5 rounded-full overflow-hidden">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            animate={{ width: `${questProgress}%` }}
-                            className="h-full bg-orange-500"
-                        />
-                    </div>
                     <button
                         onClick={onStartTraining}
-                        className="w-full py-4 rounded-2xl bg-orange-500 text-white font-black shadow-lg shadow-orange-500/20"
+                        className="w-full py-4 rounded-2xl bg-zinc-800 text-white font-black text-sm uppercase tracking-widest border border-white/10 hover:bg-zinc-700 transition"
                     >
                         Continue Quest
                     </button>
-                </>
+                </div>
             )}
           </div>
       </div>
 
-      {/* Steps Goal */}
+      {/* Physique Card */}
       <div className="space-y-4">
-          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-2">Daily Steps Goal</h3>
-          <div className="rounded-[2.5rem] bg-slate-900 border border-white/5 p-6 flex items-center gap-6">
-              <div className="relative w-24 h-24 flex-shrink-0">
-                  <svg className="w-full h-full transform -rotate-90">
-                      <circle cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent" className="text-white/5" />
-                      <motion.circle
-                        cx="48" cy="48" r="40" stroke="currentColor" strokeWidth="8" fill="transparent"
-                        strokeDasharray={251.2}
-                        initial={{ strokeDashoffset: 251.2 }}
-                        animate={{ strokeDashoffset: 251.2 - (251.2 * stepPercent) / 100 }}
-                        className="text-cyan-500 drop-shadow-[0_0_8px_rgba(6,182,212,0.4)]"
-                      />
-                  </svg>
-                  <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-lg font-black text-white"><Footprints className="w-4 h-4 inline mb-1" /> {currentSteps.toLocaleString()}</span>
-                      <span className="text-[10px] font-bold text-slate-500 uppercase">steps</span>
-                  </div>
-              </div>
-              <div className="flex-1 space-y-1">
-                  <div className="flex justify-between items-end">
-                      <span className="text-sm font-bold text-slate-400">Goal</span>
-                      <span className="text-lg font-black text-white">{runningProgress.stepGoal?.toLocaleString()}</span>
-                  </div>
-                  <div className="h-1.5 w-full bg-white/5 rounded-full overflow-hidden">
-                      <div className="h-full bg-cyan-500" style={{ width: `${stepPercent}%` }} />
-                  </div>
-                  <p className="text-[10px] font-bold text-slate-500 uppercase mt-2">
-                    Phase {runningProgress.phase} of 3 • Build the habit
-                  </p>
-                  <div className="flex justify-between items-center mt-2">
-                    <p className="text-[10px] font-bold text-emerald-400">≈ {Math.round(currentSteps * 0.000762 * 10) / 10} km walked</p>
-                    <div className="flex gap-2">
-                        <button
-                            onClick={() => setCurrentSteps(prev => prev + 500)}
-                            className="text-[10px] font-black text-white uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded hover:bg-white/20 transition"
-                        >
-                            +500
-                        </button>
-                        <button
-                            onClick={() => syncSteps(currentSteps)}
-                            className="text-[10px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-400/30 px-2 py-0.5 rounded hover:bg-cyan-400/10 transition"
-                        >
-                            Sync
-                        </button>
-                    </div>
-                  </div>
-              </div>
-          </div>
-      </div>
-
-      {/* Fasting Card */}
-      <div className="space-y-4">
-          <div className="flex justify-between items-center px-2">
-              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Fasting Window</h3>
-              <span className="bg-indigo-500/20 text-indigo-400 text-[10px] font-black px-2 py-0.5 rounded border border-indigo-500/30">
-                  {protocol?.protocolType || '16:8'} Protocol
-              </span>
-          </div>
-          <div className="rounded-[2.5rem] bg-slate-900 border border-white/5 p-6 flex items-center gap-6">
-              <div className="w-16 h-16 rounded-full border-4 border-indigo-500/30 flex items-center justify-center relative">
-                  <Moon className="w-8 h-8 text-indigo-400" />
-                  <div className="absolute inset-0 border-4 border-indigo-500 rounded-full border-t-transparent animate-spin-slow" />
-              </div>
-              <div className="flex-1">
-                  <div className="text-xl font-black text-white">8h 14m fasting</div>
-                  <p className="text-xs font-bold text-slate-400">Eating: {protocol?.eatingWindowStart} – {protocol?.eatingWindowEnd}</p>
-                  <p className="text-xs font-black text-cyan-400 mt-1">Window opens in 3h 46m</p>
-              </div>
-          </div>
-      </div>
-
-      {/* Calories Card */}
-      <div className="space-y-4">
-          <div className="flex justify-between items-center px-2">
-              <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Today's Calories</h3>
-              <span className="text-[10px] font-black text-orange-400 bg-orange-400/10 px-2 py-0.5 rounded border border-orange-400/20 uppercase tracking-tighter">
-                {nutritionSummary?.totalCaloriesConsumed} / {nutritionSummary?.totalAllowance} kcal
-              </span>
-          </div>
-          <div className="rounded-[2.5rem] bg-slate-900 border border-white/5 p-6 space-y-6">
-              <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
-                  <motion.div
-                    initial={{ width: 0 }}
-                    animate={{ width: `${caloriePercent}%` }}
-                    className="h-full bg-orange-500 shadow-[0_0_12px_rgba(249,115,22,0.4)]"
-                  />
-              </div>
-              <div className="grid grid-cols-3 gap-4">
-                <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] font-black uppercase text-slate-500">
-                        <span>Protein</span>
-                        <span className="text-white">{nutritionSummary?.targets?.proteinG || 0}g</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-pink-500"
-                          style={{ width: `${Math.min(100, (nutritionSummary?.mealEntries.reduce((s, m) => s + m.foods.reduce((fs, f) => fs + (f.calories * 0.3 / 4), 0), 0) / (nutritionSummary?.targets?.proteinG || 1)) * 100)}%` }}
-                        />
-                    </div>
-                </div>
-                <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] font-black uppercase text-slate-500">
-                        <span>Carbs</span>
-                        <span className="text-white">{nutritionSummary?.targets?.carbsG || 0}g</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-indigo-500"
-                          style={{ width: `${Math.min(100, (nutritionSummary?.mealEntries.reduce((s, m) => s + m.foods.reduce((fs, f) => fs + (f.calories * 0.4 / 4), 0), 0) / (nutritionSummary?.targets?.carbsG || 1)) * 100)}%` }}
-                        />
-                    </div>
-                </div>
-                <div className="space-y-1">
-                    <div className="flex justify-between text-[10px] font-black uppercase text-slate-500">
-                        <span>Fat</span>
-                        <span className="text-white">{nutritionSummary?.targets?.fatG || 0}g</span>
-                    </div>
-                    <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div
-                          className="h-full bg-orange-500"
-                          style={{ width: `${Math.min(100, (nutritionSummary?.mealEntries.reduce((s, m) => s + m.foods.reduce((fs, f) => fs + (f.calories * 0.3 / 9), 0), 0) / (nutritionSummary?.targets?.fatG || 1)) * 100)}%` }}
-                        />
-                    </div>
-                </div>
-              </div>
-              <button
-                onClick={onViewNutrition}
-                className="w-full py-4 rounded-2xl bg-white/5 border border-white/10 text-white font-black hover:bg-white/10 transition"
-              >
-                  View Nutrition Tracker
-              </button>
-          </div>
-      </div>
-
-      {/* Physique Development */}
-      <div className="space-y-4">
-          <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest px-2">Physique Development</h3>
-          <div className="rounded-[2.5rem] bg-slate-900 border border-white/5 p-8">
-            <MuscleGraphic growth={progression.muscleGrowth} />
-            <div className="mt-8 grid grid-cols-2 gap-4">
+          <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Physique Status</h3>
+          <div className="rounded-[2.5rem] bg-zinc-900 border border-white/5 p-8 shadow-xl">
+            <div className="bg-black/50 rounded-[2rem] p-6 mb-8 border border-white/5">
+                <MuscleGraphic growth={progression.muscleGrowth} />
+            </div>
+            <div className="grid grid-cols-2 gap-x-8 gap-y-4">
                 {Object.entries(progression.muscleGrowth).map(([muscle, value]) => (
                 <div key={muscle} className="space-y-1">
-                    <div className="flex justify-between text-[10px] font-black uppercase tracking-wider text-slate-400">
-                    <span>{muscle}</span>
-                    <span className="text-white">{Math.round(value)}%</span>
+                    <div className="flex justify-between text-[9px] font-black uppercase tracking-wider text-zinc-500">
+                        <span>{muscle}</span>
+                        <span className="text-white">{Math.round(value)}%</span>
                     </div>
-                    <div className="h-1.5 rounded-full bg-white/5">
+                    <div className="h-1 rounded-full bg-black">
                     <motion.div
                         initial={{ width: 0 }}
                         animate={{ width: `${value}%` }}
-                        className="h-full rounded-full bg-cyan-500"
+                        className="h-full rounded-full bg-primary"
                     />
                     </div>
                 </div>

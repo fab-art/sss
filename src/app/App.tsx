@@ -29,29 +29,29 @@ export function App() {
   const navigateToNutrition = () => setActiveTab('nutrition');
 
   return (
-    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col">
+    <main className="min-h-screen bg-black text-slate-100 flex flex-col font-sans">
       <div className="flex-1 overflow-y-auto px-4 pt-8 pb-32">
         <div className="max-w-xl mx-auto">
           {!isHydrated && (
-            <p className="rounded-2xl bg-white/10 p-4 text-slate-300 mb-6">
-              Loading local HeroPath data…
+            <p className="rounded-2xl bg-white/5 p-4 text-slate-400 mb-6 text-xs font-bold uppercase tracking-widest">
+              Syncing HeroPath…
             </p>
           )}
 
           <AnimatePresence mode="wait">
             <motion.div
               key={activeTab}
-              initial={{ opacity: 0, x: 10 }}
-              animate={{ opacity: 1, x: 0 }}
-              exit={{ opacity: 0, x: -10 }}
-              transition={{ duration: 0.15 }}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: -10 }}
+              transition={{ duration: 0.2, ease: "easeOut" }}
             >
               {activeTab === 'home' && <Dashboard onStartTraining={navigateToTrain} onViewNutrition={navigateToNutrition} />}
               {activeTab === 'train' && <WorkoutLogger />}
               {activeTab === 'nutrition' && <NutritionTracker />}
               {activeTab === 'wins' && (
                   <div className="space-y-6">
-                      <h2 className="text-3xl font-black text-white px-2">Your Victories</h2>
+                      <h2 className="text-3xl font-black text-white px-2">Victories</h2>
                       <AchievementList />
                   </div>
               )}
@@ -62,7 +62,7 @@ export function App() {
       </div>
 
       {/* Navigation */}
-      <nav className="fixed bottom-0 left-0 right-0 bg-slate-900/80 backdrop-blur-xl border-t border-white/5 px-6 pt-3 pb-8 z-40">
+      <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/80 backdrop-blur-2xl border-t border-white/5 px-6 pt-3 pb-8 z-40">
         <div className="max-w-md mx-auto flex justify-between items-center">
             {[
                 { id: 'home', icon: Home, label: 'Home' },
@@ -79,12 +79,12 @@ export function App() {
                         onClick={() => setActiveTab(tab.id as 'home' | 'train' | 'nutrition' | 'wins' | 'profile')}
                         aria-label={tab.label}
                         aria-current={isActive ? 'page' : undefined}
-                        className={`flex flex-col items-center gap-1 transition ${isActive ? 'text-cyan-400' : 'text-slate-500'}`}
+                        className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'text-primary scale-110' : 'text-zinc-600'}`}
                     >
-                        <div className={`p-2 rounded-xl transition ${isActive ? 'bg-cyan-400/10' : ''}`}>
-                            <Icon className="w-6 h-6" />
+                        <div className={`p-2 rounded-2xl transition-colors ${isActive ? 'bg-primary/10' : ''}`}>
+                            <Icon className={`w-6 h-6 ${isActive ? 'fill-primary/20' : ''}`} />
                         </div>
-                        <span className="text-[10px] font-black uppercase tracking-tighter">{tab.label}</span>
+                        <span className="text-[9px] font-black uppercase tracking-[0.1em]">{tab.label}</span>
                     </button>
                 );
             })}
