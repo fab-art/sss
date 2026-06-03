@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { memo, useMemo, useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Info, Trophy, Flame } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
@@ -7,7 +7,112 @@ import { MuscleGraphic } from '../../components/MuscleGraphic';
 export function QuestRewardModal({ onClose }: { onClose: () => void }) {
   const { progression, activeQuest, streak } = useProgressionStore();
 
-  if (!activeQuest) return null;
+type ExercisePlan = {
+  key: ExerciseKey;
+  name: string;
+  target: number;
+  unit: 'reps' | 'km';
+  muscles: string[];
+  cue: string;
+  tips: string[];
+};
+
+type ExerciseProgress = Record<ExerciseKey, number>;
+
+const exercisePlan: ExercisePlan[] = [
+  {
+    key: 'pushups',
+    name: 'Push-ups',
+    target: 10,
+    unit: 'reps',
+    muscles: ['Chest', 'Triceps', 'Shoulders', 'Core'],
+    cue: 'Brace your core and move as one straight plank.',
+    tips: [
+      'Set hands just outside shoulder width and stack wrists under shoulders.',
+      'Lower until elbows are near 45° from your ribs, then press the floor away.',
+      'Keep hips from sagging; stop the set before form breaks.'
+    ]
+  },
+  {
+    key: 'squats',
+    name: 'Squats',
+    target: 15,
+    unit: 'reps',
+    muscles: ['Quads', 'Glutes', 'Hamstrings', 'Core'],
+    cue: 'Sit between your hips with knees tracking over toes.',
+    tips: [
+      'Plant feet around shoulder width and keep heels rooted.',
+      'Brace your torso, send hips back slightly, then bend knees together.',
+      'Stand tall by driving through mid-foot without letting knees cave inward.'
+    ]
+  },
+  {
+    key: 'situps',
+    name: 'Sit-ups',
+    target: 12,
+    unit: 'reps',
+    muscles: ['Abs', 'Hip flexors', 'Obliques'],
+    cue: 'Curl up under control instead of yanking your neck.',
+    tips: [
+      'Keep feet planted and ribs pulled down before the first rep.',
+      'Exhale as you rise and think about bringing ribs toward hips.',
+      'Lower slowly until shoulders touch, then reset your brace.'
+    ]
+  },
+  {
+    key: 'cardio',
+    name: 'Cardio run',
+    target: 1,
+    unit: 'km',
+    muscles: ['Heart', 'Glutes', 'Quads', 'Calves'],
+    cue: 'Stay conversational and smooth; HeroPath rewards consistency first.',
+    tips: [
+      'Start at an easy pace for the first few minutes before building rhythm.',
+      'Keep chest tall, shoulders relaxed, and steps light under your center of mass.',
+      'If breathing spikes, slow to a walk and resume when controlled.'
+    ]
+  }
+];
+
+const initialProgress = exercisePlan.reduce(
+  (progress, exercise) => ({ ...progress, [exercise.key]: 0 }),
+  {} as ExerciseProgress
+);
+
+const muscleHighlight: Record<ExerciseKey, string> = {
+  pushups: 'fill-orange-400/80 stroke-orange-200',
+  squats: 'fill-cyan-400/75 stroke-cyan-200',
+  situps: 'fill-fuchsia-400/75 stroke-fuchsia-200',
+  cardio: 'fill-emerald-400/75 stroke-emerald-200'
+};
+
+const inactiveMuscle = 'fill-slate-700/70 stroke-slate-500/50';
+
+function clampProgress(value: number, exercise: ExercisePlan) {
+  const clamped = Math.min(Math.max(0, value), exercise.target * 2);
+
+  return exercise.unit === 'km' ? Number(clamped.toFixed(1)) : Math.round(clamped);
+}
+
+/**
+ * Memoized SVG component to prevent expensive re-renders of the muscle map
+ * when unrelated WorkoutLogger state (duration, intensity) changes.
+ */
+const WorkoutMuscleGraphic = memo(function WorkoutMuscleGraphic({
+  exercise,
+  repCount
+}: {
+  exercise: ExercisePlan;
+  repCount: number;
+}) {
+  const highlighted = muscleHighlight[exercise.key];
+  const isPushups = exercise.key === 'pushups';
+  const isSquats = exercise.key === 'squats';
+  const isSitups = exercise.key === 'situps';
+  const isCardio = exercise.key === 'cardio';
+
+  // "Pump" effect: brief scale up on rep increment
+  const pumpScale = repCount > 0 ? 1.05 : 1.0;
 
   return (
     <motion.div
@@ -66,7 +171,7 @@ export function QuestRewardModal({ onClose }: { onClose: () => void }) {
       </motion.div>
     </motion.div>
   );
-}
+});
 
 export function WorkoutLogger() {
   const { activeQuest, updateExerciseProgress, completeActiveQuest } = useProgressionStore();
