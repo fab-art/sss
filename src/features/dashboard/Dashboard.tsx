@@ -1,4 +1,5 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
@@ -30,7 +31,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
     ? (activeQuest.exercises.filter(ex => ex.state === 'completed').length / activeQuest.exercises.length) * 100
     : 0;
 
-  const currentSteps = 3842; // This would normally come from a pedometer API
+  const [currentSteps, setCurrentSteps] = useState(3842); // This would normally come from a pedometer API
   const stepPercent = runningProgress.stepGoal
     ? (currentSteps / runningProgress.stepGoal) * 100
     : 0;
@@ -164,14 +165,20 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   </p>
                   <div className="flex justify-between items-center mt-2">
                     <p className="text-[10px] font-bold text-emerald-400">≈ {Math.round(currentSteps * 0.000762 * 10) / 10} km walked</p>
-                    <button
-                        onClick={() => syncSteps(currentSteps)}
-                        disabled={currentSteps === 3842}
-                        title={currentSteps === 3842 ? 'Pedometer not connected' : 'Sync steps'}
-                        className="text-[10px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-400/30 px-2 py-0.5 rounded hover:bg-cyan-400/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                        Sync
-                    </button>
+                    <div className="flex gap-2">
+                        <button
+                            onClick={() => setCurrentSteps(prev => prev + 500)}
+                            className="text-[10px] font-black text-white uppercase tracking-widest bg-white/10 px-2 py-0.5 rounded hover:bg-white/20 transition"
+                        >
+                            +500
+                        </button>
+                        <button
+                            onClick={() => syncSteps(currentSteps)}
+                            className="text-[10px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-400/30 px-2 py-0.5 rounded hover:bg-cyan-400/10 transition"
+                        >
+                            Sync
+                        </button>
+                    </div>
                   </div>
               </div>
           </div>
@@ -221,7 +228,10 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                         <span className="text-white">{nutritionSummary?.targets?.proteinG || 0}g</span>
                     </div>
                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-pink-500" style={{ width: '40%' }} />
+                        <div
+                          className="h-full bg-pink-500"
+                          style={{ width: `${Math.min(100, (nutritionSummary?.mealEntries.reduce((s, m) => s + m.foods.reduce((fs, f) => fs + (f.calories * 0.3 / 4), 0), 0) / (nutritionSummary?.targets?.proteinG || 1)) * 100)}%` }}
+                        />
                     </div>
                 </div>
                 <div className="space-y-1">
@@ -230,7 +240,10 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                         <span className="text-white">{nutritionSummary?.targets?.carbsG || 0}g</span>
                     </div>
                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-500" style={{ width: '40%' }} />
+                        <div
+                          className="h-full bg-indigo-500"
+                          style={{ width: `${Math.min(100, (nutritionSummary?.mealEntries.reduce((s, m) => s + m.foods.reduce((fs, f) => fs + (f.calories * 0.4 / 4), 0), 0) / (nutritionSummary?.targets?.carbsG || 1)) * 100)}%` }}
+                        />
                     </div>
                 </div>
                 <div className="space-y-1">
@@ -239,7 +252,10 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                         <span className="text-white">{nutritionSummary?.targets?.fatG || 0}g</span>
                     </div>
                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-orange-500" style={{ width: '40%' }} />
+                        <div
+                          className="h-full bg-orange-500"
+                          style={{ width: `${Math.min(100, (nutritionSummary?.mealEntries.reduce((s, m) => s + m.foods.reduce((fs, f) => fs + (f.calories * 0.3 / 9), 0), 0) / (nutritionSummary?.targets?.fatG || 1)) * 100)}%` }}
+                        />
                     </div>
                 </div>
               </div>
