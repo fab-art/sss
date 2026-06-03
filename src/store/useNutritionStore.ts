@@ -73,8 +73,8 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
     let withinFastingWindow = true;
     if (currentProtocol && currentProtocol.protocolType !== 'none') {
         const nowMin = toMinutes(timestamp.slice(0, 5));
-        const startMin = toMinutes(protocol.eatingWindowStart);
-        const endMin = toMinutes(protocol.eatingWindowEnd);
+        const startMin = toMinutes(currentProtocol.eatingWindowStart);
+        const endMin = toMinutes(currentProtocol.eatingWindowEnd);
 
         if (startMin < endMin) {
             withinFastingWindow = nowMin >= startMin && nowMin <= endMin;

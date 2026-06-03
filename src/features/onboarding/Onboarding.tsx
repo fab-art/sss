@@ -83,8 +83,16 @@ export function Onboarding() {
                     <input
                         id="age-input"
                         type="number"
-                        value={age}
-                        onChange={e => setAge(parseInt(e.target.value))}
+                        value={age || ''}
+                        onChange={e => {
+                            const raw = e.target.value;
+                            if (raw === '') {
+                                setAge(0);
+                                return;
+                            }
+                            const val = parseInt(raw);
+                            if (!isNaN(val)) setAge(val);
+                        }}
                         placeholder="Age"
                         className="w-full py-6 pl-16 pr-6 rounded-3xl bg-slate-900 border border-white/10 text-xl font-bold focus:border-orange-500 transition outline-none"
                     />
@@ -97,8 +105,16 @@ export function Onboarding() {
                     <input
                         id="weight-input"
                         type="number"
-                        value={weight}
-                        onChange={e => setWeight(parseInt(e.target.value))}
+                        value={weight || ''}
+                        onChange={e => {
+                            const raw = e.target.value;
+                            if (raw === '') {
+                                setWeight(0);
+                                return;
+                            }
+                            const val = parseInt(raw);
+                            if (!isNaN(val)) setWeight(val);
+                        }}
                         placeholder="Weight (lbs)"
                         className="w-full py-6 pl-16 pr-6 rounded-3xl bg-slate-900 border border-white/10 text-xl font-bold focus:border-orange-500 transition outline-none"
                     />
@@ -111,8 +127,16 @@ export function Onboarding() {
                     <input
                         id="height-input"
                         type="number"
-                        value={height}
-                        onChange={e => setHeight(parseInt(e.target.value))}
+                        value={height || ''}
+                        onChange={e => {
+                            const raw = e.target.value;
+                            if (raw === '') {
+                                setHeight(0);
+                                return;
+                            }
+                            const val = parseInt(raw);
+                            if (!isNaN(val)) setHeight(val);
+                        }}
                         placeholder="Height (inches)"
                         className="w-full py-6 pl-16 pr-6 rounded-3xl bg-slate-900 border border-white/10 text-xl font-bold focus:border-orange-500 transition outline-none"
                     />

@@ -192,12 +192,20 @@ export function NutritionTracker() {
                       <div className="space-y-4">
                           <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest">Select Foods</h3>
                           <div className="grid gap-3">
-                              {foodPresets.map(food => {
+                              {foodPresets.map(preset => {
+                                  const food: FoodItem = {
+                                      id: preset.id,
+                                      name: preset.name,
+                                      category: preset.category,
+                                      calories: preset.calories,
+                                      portion: preset.portion,
+                                      isRwandanFood: true
+                                  };
                                   const isSelected = selectedFoods.find(f => f.id === food.id);
                                   return (
                                       <button
                                         key={food.id}
-                                        onClick={() => toggleFood(food as FoodItem)}
+                                        onClick={() => toggleFood(food)}
                                         className={`flex justify-between items-center p-5 rounded-2xl border transition ${isSelected ? 'bg-orange-500/10 border-orange-500/30' : 'bg-white/5 border-white/5'}`}
                                       >
                                           <div className="text-left">
