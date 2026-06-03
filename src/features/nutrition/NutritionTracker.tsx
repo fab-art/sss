@@ -197,7 +197,7 @@ export function NutritionTracker() {
                                   return (
                                       <button
                                         key={food.id}
-                                        onClick={() => toggleFood(food as FoodItem)}
+                                        onClick={() => toggleFood({ ...food, isRwandanFood: true } as FoodItem)}
                                         className={`flex justify-between items-center p-5 rounded-2xl border transition ${isSelected ? 'bg-orange-500/10 border-orange-500/30' : 'bg-white/5 border-white/5'}`}
                                       >
                                           <div className="text-left">
