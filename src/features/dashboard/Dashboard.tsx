@@ -166,7 +166,9 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                     <p className="text-[10px] font-bold text-emerald-400">≈ {Math.round(currentSteps * 0.000762 * 10) / 10} km walked</p>
                     <button
                         onClick={() => syncSteps(currentSteps)}
-                        className="text-[10px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-400/30 px-2 py-0.5 rounded hover:bg-cyan-400/10 transition"
+                        disabled={currentSteps === 3842}
+                        title={currentSteps === 3842 ? 'Pedometer not connected' : 'Sync steps'}
+                        className="text-[10px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-400/30 px-2 py-0.5 rounded hover:bg-cyan-400/10 transition disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                         Sync
                     </button>
