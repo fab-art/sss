@@ -1,6 +1,11 @@
 import { getRankForXp } from './ranks';
 import { getLevelForXp } from './xp';
-import type { ProgressionState, WorkoutInput } from './types';
+import type {
+  ProgressionState,
+  WorkoutInput,
+  DailyQuest,
+  RunningProgress
+} from './types';
 
 export const initialProgression: ProgressionState = {
   totalXp: 0,
@@ -17,6 +22,15 @@ export const initialProgression: ProgressionState = {
   }
 };
 
+export const initialRunningProgress: RunningProgress = {
+  userId: 'default',
+  phase: 1,
+  stepGoal: 5000,
+  daysInPhase: 0,
+  readyForNextPhase: false,
+  lastUpdated: new Date().toISOString()
+};
+
 export function applyXp(state: ProgressionState, xpAwarded: number): ProgressionState {
   const totalXp = Math.max(0, state.totalXp + xpAwarded);
   const rank = getRankForXp(totalXp);
@@ -29,6 +43,89 @@ export function applyXp(state: ProgressionState, xpAwarded: number): Progression
   };
 }
 
+/**
+ * Checks if all exercises in a quest are completed.
+ */
+export function checkQuestCompletion(quest: DailyQuest): boolean {
+  return quest.exercises.every(ex => ex.state === 'completed');
+}
+
+/**
+ * Applies rewards (XP and Muscle Growth) from a completed quest.
+ */
+export function applyQuestRewards(
+  state: ProgressionState,
+  quest: DailyQuest
+): ProgressionState {
+  if (!quest.isCompleted) return state;
+
+  const stateWithXp = applyXp(state, quest.xpReward);
+  const nextState = {
+      ...stateWithXp,
+      workoutsCompleted: stateWithXp.workoutsCompleted + 1
+  };
+
+  const muscleGrowth = { ...nextState.muscleGrowth };
+
+  quest.exercises.forEach(ex => {
+    ex.muscleGroups.forEach(mg => {
+      muscleGrowth[mg.name] = Math.min(100, (muscleGrowth[mg.name] || 0) + mg.growthPercentage);
+    });
+  });
+
+  return {
+    ...nextState,
+    muscleGrowth
+  };
+}
+
+/**
+ * Logic for the 3-Phase Running Evolution.
+ */
+export function evaluateRunningPhaseProgression(
+  current: RunningProgress,
+  completedTargetToday: boolean
+): RunningProgress {
+  const daysInPhase = completedTargetToday ? current.daysInPhase + 1 : 0;
+  let phase = current.phase;
+  let readyForNextPhase = false;
+  let stepGoal = current.stepGoal;
+  let lightRunMeters = current.lightRunMeters;
+  let distanceRunKm = current.distanceRunKm;
+
+  // Phase transition rules
+  if (daysInPhase >= 7) {
+    if (phase === 1) {
+      phase = 2;
+      stepGoal = 10000;
+      lightRunMeters = 500;
+      readyForNextPhase = true;
+    } else if (phase === 2) {
+      phase = 3;
+      distanceRunKm = 1.0;
+      readyForNextPhase = true;
+    }
+  }
+
+  // Phase 3 auto-progression: +0.25km every 14 days of consistency
+  if (phase === 3 && daysInPhase > 0 && daysInPhase % 14 === 0) {
+    distanceRunKm = (distanceRunKm || 1.0) + 0.25;
+    if (distanceRunKm > 2.0) distanceRunKm = 2.0; // Cap at 2km for MVP
+  }
+
+  return {
+    ...current,
+    phase,
+    daysInPhase,
+    readyForNextPhase,
+    stepGoal,
+    lightRunMeters,
+    distanceRunKm,
+    lastUpdated: new Date().toISOString()
+  };
+}
+
+// Legacy support for simple workout logging if needed
 export function completeWorkoutProgression(
   state: ProgressionState,
   xpAwarded: number,
@@ -41,17 +138,10 @@ export function completeWorkoutProgression(
 
   if (!workout) return nextState;
 
-  // Note: For MVP we use the exercisesCompleted as a rough proxy if detailed rep data isn't passed,
-  // but here we can at least apply some growth.
-  // Actually, WorkoutInput only has durationMinutes, intensity, and exercisesCompleted.
-  // The PDS implies more detailed tracking in the UI (WorkoutLogger has it).
-
   const muscleGrowth = { ...state.muscleGrowth };
-  const intensityFactor = 1 + (workout.intensity - 3) * 0.1; // Intensity 3 is baseline
+  const intensityFactor = 1 + (workout.intensity - 3) * 0.1;
 
-  // Simplified growth application for MVP based on WorkoutInput
   if (workout.exercisesCompleted > 0) {
-    // Distribute growth based on exercises completed (assuming balanced distribution for now)
     const growthPerExercise = (workout.exercisesCompleted / 4) * intensityFactor;
 
     muscleGrowth.chest = Math.min(100, muscleGrowth.chest + growthPerExercise * 3.0);
@@ -67,6 +157,7 @@ export function completeWorkoutProgression(
   };
 }
 
+// Keep the advanced progression engine for potential use in Phase 3 adaptive difficulty
 export type PerformanceEntry = Readonly<{
   date: string;
   completionRate: number;
@@ -110,7 +201,6 @@ export const LOW_CONSISTENCY_THRESHOLD = 0.6;
 export const ADVANCEMENT_CONSISTENCY_THRESHOLD = 0.85;
 export const MIN_ADVANCEMENT_STREAK_DAYS = 21;
 export const MIN_ADVANCEMENT_DAYS_AT_RANK = 14;
-// Snap threshold: close gaps ≤0.5 reps/km to target to guarantee progression
 export const PROGRESSION_SNAP_THRESHOLD = 0.5;
 
 const clamp = (value: number, min = 0, max = 1): number => Math.min(max, Math.max(min, value));
@@ -119,7 +209,6 @@ const average = (values: readonly number[], fallback: number): number => {
   if (values.length === 0) {
     return fallback;
   }
-
   return values.reduce((total, value) => total + value, 0) / values.length;
 };
 
@@ -128,11 +217,7 @@ const dayKey = (value: string): string => value.slice(0, 10);
 const daysBetween = (start: string, end: string): number => {
   const startMs = Date.parse(`${dayKey(start)}T00:00:00.000Z`);
   const endMs = Date.parse(`${dayKey(end)}T00:00:00.000Z`);
-
-  if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) {
-    return 0;
-  }
-
+  if (!Number.isFinite(startMs) || !Number.isFinite(endMs)) return 0;
   return Math.max(0, Math.round((endMs - startMs) / 86_400_000));
 };
 
@@ -180,10 +265,7 @@ export function calculateFatigueScore(input: ProgressionInput): number {
 const scaleToward = (current: number, target: number, fraction: number): number => {
   const boundedCurrent = Math.min(current, target);
   const scaled = boundedCurrent + (target - boundedCurrent) * fraction;
-  
-  // Snap to target if within threshold to avoid asymptotic approach
   const gap = target - scaled;
-  
   return gap > 0 && gap <= PROGRESSION_SNAP_THRESHOLD ? target : scaled;
 };
 
@@ -211,7 +293,6 @@ const hold = (input: ProgressionInput): DifficultyTarget => ({
 
 const progress = (input: ProgressionInput, consistencyScore: number): DifficultyTarget => {
   const fraction = 0.08 + consistencyScore * 0.12;
-
   return {
     reps: scaleToward(input.currentDifficulty.reps, input.nextRankTarget.reps, fraction),
     distanceMeters: scaleToward(

@@ -1,5 +1,8 @@
 export type ISODateString = string;
 
+export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'veryActive';
+export type NutritionGoal = 'weightLoss' | 'muscleGain' | 'maintenance';
+
 export type Rank = {
   id: string;
   title: string;
@@ -54,6 +57,7 @@ export type AchievementSnapshot = {
   progression: ProgressionState;
   streak: StreakState;
   workouts: WorkoutRecord[];
+  quests: DailyQuest[];
 };
 
 export type UserAchievement = {
@@ -70,126 +74,148 @@ export type User = {
   updatedAt: ISODateString;
 };
 
-export type FastingProtocolType = 'custom' | '16:8' | '14:10' | '18:6' | '20:4';
+// --- NEW V2 TYPES ---
 
-export interface FastingSession {
-  id: string;
-  date: string; // YYYY-MM-DD
-  protocolType: FastingProtocolType;
-  fastingStartTime: string; // HH:mm
-  eatingWindowStart: string; // HH:mm
-  eatingWindowEnd: string; // HH:mm
-  totalFastingHours: number;
-  completedSuccessfully: boolean;
-  notes?: string;
+export type ExerciseType = 'push-ups' | 'sit-ups' | 'squats' | 'light-run' | 'distance-run' | 'footsteps';
+
+export interface MuscleGroupImpact {
+  name: keyof MuscleGrowth;
+  intensity: 'primary' | 'secondary' | 'support';
+  growthPercentage: number;
 }
 
-export type FoodCategory = 'breakfast' | 'lunch' | 'dinner' | 'snack' | 'drink';
-
-export interface Meal {
+export interface ExerciseInstance {
   id: string;
+  questId: string;
+  exerciseType: ExerciseType;
+  targetReps?: number;
+  targetDistance?: number; // meters
+  targetDuration?: number; // minutes
+  repsLogged?: number;
+  distanceLogged?: number; // meters
+  durationLogged?: number; // minutes
+  completedAt?: string;
+  muscleGroups: MuscleGroupImpact[];
+  xpContribution: number;
+  state: 'locked' | 'in-progress' | 'completed';
+}
+
+export interface DailyQuest {
+  id: string;
+  date: string; // YYYY-MM-DD
+  userId: string;
+  rank: number;
+  questName: string;
+  exercises: ExerciseInstance[];
+  completedAt?: string;
+  xpReward: number;
+  isCompleted: boolean;
+}
+
+export interface RunningProgress {
+  userId: string;
+  phase: 1 | 2 | 3; // 1: Footsteps, 2: Light Runs, 3: Distance Running
+  stepGoal?: number;
+  lightRunMeters?: number;
+  distanceRunKm?: number;
+  daysInPhase: number;
+  readyForNextPhase: boolean;
+  lastUpdated: string;
+}
+
+export type FoodCategory = 'staple' | 'protein' | 'vegetable' | 'fruit' | 'drink';
+
+export interface FoodItem {
+  id: string;
+  name: string;
+  category: FoodCategory;
+  calories: number;
+  portion: string;
+  isRwandanFood: boolean;
+}
+
+export interface MealEntry {
+  id: string;
+  userId: string;
   date: string; // YYYY-MM-DD
   timestamp: string; // HH:mm:ss
-  foodName: string;
-  servingSize: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber?: number;
-  foodCategory: FoodCategory;
-  source: 'preset' | 'barcode' | 'manual';
-  mealNutritionId?: string;
+  mealType: 'breakfast' | 'lunch' | 'dinner' | 'snack';
+  foods: FoodItem[];
+  totalCalories: number;
+  withinFastingWindow: boolean;
 }
 
-export type ActivityLevel = 'sedentary' | 'light' | 'moderate' | 'active' | 'veryActive';
-export type NutritionGoal = 'weightLoss' | 'muscleGain' | 'maintenance';
+export interface RwandanFoodPreset {
+  id: string;
+  name: string;
+  category: FoodCategory;
+  calories: number;
+  portion: string;
+  localLanguage?: string;
+  createdAt: string;
+}
 
-export interface NutritionProfile {
+export type FastingProtocolType = 'none' | '16:8' | '14:10' | '18:6' | 'custom';
+
+export interface FastingProtocol {
   userId: string;
-  age: number;
-  weight: number; // lbs
-  height: number; // inches
-  activityLevel: ActivityLevel;
-  goal: NutritionGoal;
-  deficit: 300 | 500 | 750;
-  preferredIfProtocol: FastingProtocolType;
+  protocolType: FastingProtocolType;
   customFastingHours?: number;
-  eatingWindowStart?: string; // HH:mm
-  eatingWindowEnd?: string; // HH:mm
-  macroRatio: { protein: number; carbs: number; fat: number };
-  trackWeightOptional: boolean;
-  lastUpdated: string;
+  eatingWindowStart: string; // HH:mm
+  eatingWindowEnd: string; // HH:mm
+  createdAt: string;
+  lastModified: string;
 }
 
 export interface DailyNutritionSummary {
   date: string;
   userId: string;
-  caloriesConsumed: number;
-  caloriesBurned: number;
-  calorieDeficit: number;
-  proteinConsumed: number;
-  carbsConsumed: number;
-  fatConsumed: number;
-  proteinTarget: number;
-  carbsTarget: number;
-  fatTarget: number;
-  mealsLogged: number;
-  fastingAdherence: boolean;
-  weight?: number;
-  notes?: string;
+  mealEntries: MealEntry[];
+  totalCaloriesConsumed: number;
+  dailyGoal: number;
+  workoutCaloriesBurned: number;
+  totalAllowance: number;
+  remainingCalories: number;
+  deficit: number;
+  fastingWindow: {
+    startTime: string;
+    endTime: string;
+    adherence: boolean;
+  };
 }
 
-export interface FoodPreset {
-  id: string;
-  name: string;
-  calories: number;
-  protein: number;
-  carbs: number;
-  fat: number;
-  fiber?: number;
-  category: FoodCategory;
-  servingSize: string;
-  verified: boolean;
-  createdAt: string;
-  createdBy: 'system' | 'user';
-}
-
-export type Workout = {
-  id: string;
-  userId: string;
-  type: 'pushups' | 'squats' | 'situps' | 'cardio' | string;
-  date: string;
-  pushups: number;
-  sets: number;
-  reps: number;
-  notes?: string;
-  createdAt: ISODateString;
-  updatedAt: ISODateString;
+// Keep legacy for compatibility if needed, but we'll migrate
+export type FastingSession = {
+    id: string;
+    date: string;
+    protocolType: string;
+    fastingStartTime: string;
+    eatingWindowStart: string;
+    eatingWindowEnd: string;
+    totalFastingHours: number;
+    completedSuccessfully: boolean;
 };
 
-export type Achievement = {
-  id: string;
-  userId: string;
-  key: string;
-  title: string;
-  description: string;
-  unlockedAt?: ISODateString;
-  progress: number;
-  goal: number;
-  createdAt: ISODateString;
-  updatedAt: ISODateString;
+export type Meal = {
+    id: string;
+    date: string;
+    timestamp: string;
+    foodName: string;
+    servingSize: string;
+    calories: number;
+    protein: number;
+    carbs: number;
+    fat: number;
+    foodCategory: string;
 };
 
-export type Progression = {
-  id: string;
-  userId: string;
-  date: string;
-  totalPushups: number;
-  streakDays: number;
-  level: number;
-  experience: number;
-  muscleGrowth: MuscleGrowth;
-  createdAt: ISODateString;
-  updatedAt: ISODateString;
+export type NutritionProfile = {
+    userId: string;
+    weight: number;
+    goal: string;
+    deficit: number;
+    activityLevel: string;
+    preferredIfProtocol: FastingProtocolType;
+    eatingWindowStart: string;
+    eatingWindowEnd: string;
 };
