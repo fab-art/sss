@@ -1,96 +1,161 @@
 import { create } from 'zustand';
-import type { FastingSession, Meal, NutritionProfile, FoodPreset, DailyNutritionSummary } from '../domain/types';
+import type {
+  MealEntry,
+  FastingProtocol,
+  RwandanFoodPreset,
+  DailyNutritionSummary,
+  FoodItem
+} from '../domain/types';
 import {
-  saveMeal,
-  listMealsByDate,
-  deleteMeal,
-  saveFastingSession,
-  getFastingSessionByDate,
-  saveNutritionProfile,
-  getNutritionProfile,
-  listFoodPresets
+  saveMealEntry,
+  listMealEntriesByDate,
+  deleteMealEntry,
+  saveFastingProtocol,
+  getFastingProtocol,
+  listRwandanFoodPresets,
+  bulkSaveRwandanFoodPresets
 } from '../db/repositories/nutritionRepository';
-import { summarizeDailyNutrition, calculateNutritionTargets } from '../domain/nutrition';
+import {
+  summarizeDailyNutrition,
+  RWANDAN_FOOD_PRESETS,
+  toMinutes,
+  suggestNextMeal,
+  calculateTDEE,
+  calculateNutritionTargets
+} from '../domain/nutrition';
+import { useUserStore } from './useUserStore';
 import { createId } from '../lib/id';
+import { nowIso } from '../lib/date';
 
 interface NutritionStore {
-  profile: NutritionProfile | null;
-  meals: Meal[];
-  fastingSession: FastingSession | null;
-  foodPresets: FoodPreset[];
+  protocol: FastingProtocol | null;
+  mealEntries: MealEntry[];
+  foodPresets: RwandanFoodPreset[];
   isHydrated: boolean;
 
   hydrate: (userId: string, date: string) => Promise<void>;
-  addMeal: (meal: Omit<Meal, 'id'>) => Promise<void>;
+  logMeal: (mealType: MealEntry['mealType'], foods: FoodItem[]) => Promise<void>;
   removeMeal: (id: string) => Promise<void>;
-  updateFastingSession: (session: FastingSession) => Promise<void>;
-  updateProfile: (profile: NutritionProfile) => Promise<void>;
+  updateProtocol: (protocol: FastingProtocol) => Promise<void>;
   getSummary: (workoutCaloriesBurned: number) => DailyNutritionSummary | null;
+  getSuggestions: () => string[];
 }
 
 export const useNutritionStore = create<NutritionStore>((set, get) => ({
-  profile: null,
-  meals: [],
-  fastingSession: null,
+  protocol: null,
+  mealEntries: [],
   foodPresets: [],
   isHydrated: false,
 
   hydrate: async (userId, date) => {
-    const [profile, meals, fastingSession, foodPresets] = await Promise.all([
-      getNutritionProfile(userId),
-      listMealsByDate(date),
-      getFastingSessionByDate(date),
-      listFoodPresets()
+    const [protocol, mealEntries, foodPresets] = await Promise.all([
+      getFastingProtocol(userId),
+      listMealEntriesByDate(date),
+      listRwandanFoodPresets()
     ]);
-    set({ profile, meals, fastingSession, foodPresets, isHydrated: true });
+
+    let finalFoodPresets = foodPresets;
+    if (foodPresets.length === 0) {
+      await bulkSaveRwandanFoodPresets(RWANDAN_FOOD_PRESETS);
+      finalFoodPresets = RWANDAN_FOOD_PRESETS;
+    }
+
+    set({ protocol, mealEntries, foodPresets: finalFoodPresets, isHydrated: true });
   },
 
-  addMeal: async (mealInput) => {
-    const meal = { ...mealInput, id: createId('meal') };
-    await saveMeal(meal);
-    set({ meals: [...get().meals, meal] });
+  logMeal: async (mealType, foods) => {
+    const today = nowIso().split('T')[0];
+    const timestamp = nowIso().split('T')[1].split('.')[0];
+    const totalCalories = foods.reduce((sum, f) => sum + f.calories, 0);
+
+    // Validate fasting window
+    const currentProtocol = get().protocol;
+    let withinFastingWindow = true;
+    if (currentProtocol && currentProtocol.protocolType !== 'none') {
+        const nowMin = toMinutes(timestamp.slice(0, 5));
+        const startMin = toMinutes(protocol.eatingWindowStart);
+        const endMin = toMinutes(protocol.eatingWindowEnd);
+
+        if (startMin < endMin) {
+            withinFastingWindow = nowMin >= startMin && nowMin <= endMin;
+        } else {
+            withinFastingWindow = nowMin >= startMin || nowMin <= endMin;
+        }
+    }
+
+    const entry: MealEntry = {
+      id: createId('meal'),
+      userId: 'default',
+      date: today,
+      timestamp,
+      mealType,
+      foods,
+      totalCalories,
+      withinFastingWindow
+    };
+
+    await saveMealEntry(entry);
+    set({ mealEntries: [...get().mealEntries, entry] });
   },
 
   removeMeal: async (id) => {
-    await deleteMeal(id);
-    set({ meals: get().meals.filter(m => m.id !== id) });
+    await deleteMealEntry(id);
+    const currentMealEntries = get().mealEntries;
+    set({ mealEntries: currentMealEntries.filter(m => m.id !== id) });
   },
 
-  updateFastingSession: async (session) => {
-    await saveFastingSession(session);
-    set({ fastingSession: session });
-  },
-
-  updateProfile: async (profile) => {
-    await saveNutritionProfile(profile);
-    set({ profile });
+  updateProtocol: async (protocol) => {
+    await saveFastingProtocol(protocol);
+    set({ protocol });
   },
 
   getSummary: (workoutCaloriesBurned) => {
-    const { meals, profile } = get();
-    if (!profile) return null;
+    const { mealEntries, protocol } = get();
+    const { profile } = useUserStore.getState();
 
-    const tdee = profile.weight
-      ? (profile.weight * 11) + (profile.activityLevel === 'sedentary' ? 0 : 300) // Simple approximation if full data missing
-      : 2000;
+    const tdee = calculateTDEE(
+        profile.age,
+        profile.weight,
+        profile.height,
+        profile.activityLevel,
+        0 // workoutCaloriesBurned handled separately in summarizeDailyNutrition
+    );
 
-    const targets = calculateNutritionTargets(tdee, profile.goal, profile.deficit);
-    const summary = summarizeDailyNutrition(meals, workoutCaloriesBurned, targets);
+    const targets = calculateNutritionTargets(tdee, profile.goal, 500);
+    const dailyGoal = targets.dailyCalories;
 
-    return {
-      date: meals[0]?.date || '',
-      userId: profile.userId,
-      caloriesConsumed: summary.caloriesConsumed,
-      caloriesBurned: workoutCaloriesBurned,
-      calorieDeficit: summary.calorieDeficit,
-      proteinConsumed: summary.proteinConsumed,
-      carbsConsumed: summary.carbsConsumed,
-      fatConsumed: summary.fatConsumed,
-      proteinTarget: targets.proteinG,
-      carbsTarget: targets.carbsG,
-      fatTarget: targets.fatG,
-      mealsLogged: meals.length,
-      fastingAdherence: get().fastingSession?.completedSuccessfully ?? false
+    const fastingWindow = {
+      startTime: protocol?.eatingWindowStart || '12:00',
+      endTime: protocol?.eatingWindowEnd || '20:00'
     };
+
+    const summary = summarizeDailyNutrition(mealEntries, workoutCaloriesBurned, dailyGoal, fastingWindow);
+    return {
+        ...summary,
+        targets // Include macro targets in summary
+    };
+  },
+
+  getSuggestions: () => {
+    const { protocol } = get();
+    if (!protocol) return [];
+
+    const summary = get().getSummary(0);
+    if (!summary) return [];
+
+    const now = new Date();
+    const timestamp = now.toTimeString().slice(0, 5);
+    const nowMin = toMinutes(timestamp);
+    const endMin = toMinutes(protocol.eatingWindowEnd);
+
+    let timeUntilClose = endMin - nowMin;
+    if (timeUntilClose < 0) timeUntilClose += 1440;
+
+    let timeOfDay: 'morning' | 'afternoon' | 'evening' = 'afternoon';
+    const hour = now.getHours();
+    if (hour < 11) timeOfDay = 'morning';
+    else if (hour > 17) timeOfDay = 'evening';
+
+    return suggestNextMeal(summary.remainingCalories, timeUntilClose, timeOfDay);
   }
 }));

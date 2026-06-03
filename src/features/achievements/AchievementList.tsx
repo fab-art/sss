@@ -1,36 +1,54 @@
-import { achievementDefinitions, useProgressionStore } from '../../store/useProgressionStore';
+import { ACHIEVEMENTS } from '../../domain/achievements';
+import { useProgressionStore } from '../../store/useProgressionStore';
+import { Trophy } from 'lucide-react';
 
 export function AchievementList() {
-  const unlocked = useProgressionStore((state) => state.achievements);
-  const unlockedIds = new Set(unlocked.map((achievement) => achievement.id));
+  const { achievements } = useProgressionStore();
+  const unlockedIds = new Set(achievements.map((a) => a.id));
 
   return (
-    <section className="rounded-[2rem] border border-white/10 bg-slate-950/70 p-6">
-      <h2 className="text-2xl font-black text-white">Achievements</h2>
-      <div className="mt-5 grid gap-3 md:grid-cols-2">
-        {achievementDefinitions.map((achievement) => {
-          const isUnlocked = unlockedIds.has(achievement.id);
-          return (
-            <article
-              key={achievement.id}
-              className="rounded-2xl border border-white/10 bg-white/5 p-4"
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div>
-                  <h3 className="font-bold text-white">{achievement.title}</h3>
-                  <p className="mt-1 text-sm text-slate-400">{achievement.description}</p>
+    <div className="grid gap-4 sm:grid-cols-2">
+      {ACHIEVEMENTS.map((achievement) => {
+        const isUnlocked = unlockedIds.has(achievement.id);
+        const unlockedAt = achievements.find((a) => a.id === achievement.id)?.unlockedAt;
+
+        return (
+          <div
+            className={`rounded-3xl border p-6 transition ${
+              isUnlocked
+                ? 'border-orange-500/30 bg-orange-500/10'
+                : 'border-white/5 bg-slate-900 grayscale opacity-50'
+            }`}
+            key={achievement.id}
+          >
+            <div className="flex items-start justify-between gap-4">
+              <div>
+                <h3 className={`text-lg font-black ${isUnlocked ? 'text-white' : 'text-slate-400'}`}>
+                  {achievement.title}
+                </h3>
+                <p className="mt-1 text-sm text-slate-500">{achievement.description}</p>
+                <div className="mt-4 flex items-center gap-2">
+                  <span className="rounded-lg bg-orange-500/20 px-2 py-1 text-xs font-bold text-orange-400">
+                    +{achievement.xpReward} XP
+                  </span>
+                  {unlockedAt && (
+                    <span className="text-[10px] font-bold text-slate-600 uppercase">
+                      Unlocked {unlockedAt.slice(0, 10)}
+                    </span>
+                  )}
                 </div>
-                <span className={isUnlocked ? 'text-xl' : 'grayscale'}>
-                  {isUnlocked ? '🏅' : '🔒'}
-                </span>
               </div>
-              <p className="mt-3 text-sm font-semibold text-orange-200">
-                +{achievement.xpReward} XP
-              </p>
-            </article>
-          );
-        })}
-      </div>
-    </section>
+              <div
+                className={`rounded-2xl p-3 ${
+                  isUnlocked ? 'bg-orange-500 text-white' : 'bg-slate-800 text-slate-600'
+                }`}
+              >
+                <Trophy />
+              </div>
+            </div>
+          </div>
+        );
+      })}
+    </div>
   );
 }

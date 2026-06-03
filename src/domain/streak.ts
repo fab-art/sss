@@ -1,36 +1,27 @@
-import type { ISODateString, StreakState } from './types';
+import { ISODateString } from './types';
 
-const DAY_MS = 24 * 60 * 60 * 1000;
-
-export function toDateKey(value: ISODateString | Date): ISODateString {
-  const date = value instanceof Date ? value : new Date(value);
-  return date.toISOString().slice(0, 10);
-}
-
-function daysBetween(previous: ISODateString, next: ISODateString): number {
-  const previousMs = Date.parse(`${toDateKey(previous)}T00:00:00.000Z`);
-  const nextMs = Date.parse(`${toDateKey(next)}T00:00:00.000Z`);
-  return Math.round((nextMs - previousMs) / DAY_MS);
-}
-
-export function applyWorkoutToStreak(state: StreakState, completedAt: ISODateString): StreakState {
-  const workoutDate = toDateKey(completedAt);
-
-  if (!state.lastWorkoutDate) {
-    return { current: 1, longest: Math.max(1, state.longest), lastWorkoutDate: workoutDate };
+export function applyWorkoutToStreak(
+  current: { current: number; longest: number; lastWorkoutDate?: ISODateString },
+  completedAt: ISODateString
+) {
+  const date = completedAt.slice(0, 10);
+  if (current.lastWorkoutDate === date) {
+    return current;
   }
 
-  const gap = daysBetween(state.lastWorkoutDate, workoutDate);
+  const lastDate = current.lastWorkoutDate
+    ? new Date(current.lastWorkoutDate)
+    : null;
+  const currentDate = new Date(date);
 
-  if (gap === 0) {
-    return state;
-  }
+  const isConsecutive =
+    lastDate &&
+    Math.floor((currentDate.getTime() - lastDate.getTime()) / 86400000) === 1;
 
-  const current = gap === 1 ? state.current + 1 : 1;
-
+  const nextCurrent = isConsecutive ? current.current + 1 : 1;
   return {
-    current,
-    longest: Math.max(state.longest, current),
-    lastWorkoutDate: workoutDate
+    current: nextCurrent,
+    longest: Math.max(current.longest, nextCurrent),
+    lastWorkoutDate: date
   };
 }
