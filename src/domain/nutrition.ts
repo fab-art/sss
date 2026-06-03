@@ -39,6 +39,14 @@ export const RWANDAN_FOOD_PRESETS: RwandanFoodPreset[] = [
   // DRINKS
   { id: 'drink-1', name: 'Tea with milk', category: 'drink', calories: 50, portion: '1 cup', localLanguage: 'Icyayi n’amata', createdAt: new Date().toISOString() },
   { id: 'drink-2', name: 'Coffee with milk', category: 'drink', calories: 40, portion: '1 cup', localLanguage: 'Ikawa n’amata', createdAt: new Date().toISOString() },
+
+  // ADDITIONAL VARIANTS
+  { id: 'staple-8', name: 'Sweet Potato', category: 'staple', calories: 120, portion: '1 medium', localLanguage: 'Ikijumba', createdAt: new Date().toISOString() },
+  { id: 'staple-9', name: 'Irish Potato', category: 'staple', calories: 130, portion: '1 cup', localLanguage: 'Ibirayi', createdAt: new Date().toISOString() },
+  { id: 'protein-6', name: 'Goat Brochette', category: 'protein', calories: 180, portion: '1 skewer', localLanguage: 'Indatwa', createdAt: new Date().toISOString() },
+  { id: 'protein-7', name: 'Grilled Tilapia', category: 'protein', calories: 150, portion: '100g', createdAt: new Date().toISOString() },
+  { id: 'veg-5', name: 'Isombe', category: 'vegetable', calories: 120, portion: '1 cup', localLanguage: 'Isombe', createdAt: new Date().toISOString() },
+  { id: 'fruit-5', name: 'Passion Fruit', category: 'fruit', calories: 20, portion: '1 fruit', localLanguage: 'Iritunda', createdAt: new Date().toISOString() },
 ];
 
 export function calculateTDEE(

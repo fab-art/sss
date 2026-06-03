@@ -88,38 +88,45 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
     const existing = await getDailyQuest(today);
     if (existing) return existing;
 
-    // Generate quest based on rank
+    // Available exercises pool
+    const pool = [
+      { type: 'push-ups', base: 10, inc: 5, muscles: [{ name: 'chest', intensity: 'primary', growthPercentage: 3.0 }] },
+      { type: 'sit-ups', base: 15, inc: 5, muscles: [{ name: 'core', intensity: 'primary', growthPercentage: 3.5 }] },
+      { type: 'squats', base: 20, inc: 5, muscles: [{ name: 'legs', intensity: 'primary', growthPercentage: 3.0 }] },
+      { type: 'light-run', base: 500, inc: 250, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 4.0 }] },
+      { type: 'distance-run', base: 1000, inc: 500, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 6.0 }] }
+    ];
+
+    // Select 3 unique exercises based on date to rotate
+    const dayOffset = new Date().getDate();
+    const selected = [
+      pool[(dayOffset) % pool.length],
+      pool[(dayOffset + 1) % pool.length],
+      pool[(dayOffset + 2) % pool.length]
+    ];
+
     const quest: DailyQuest = {
       id: createId('quest'),
       date: today,
       userId: 'default',
       rank,
-      questName: `Rank ${rank} Challenge`,
-      exercises: [
-        {
-          id: createId('ex'),
-          questId: '',
-          exerciseType: 'push-ups',
-          targetReps: 20 + rank * 5,
-          repsLogged: 0,
-          state: 'locked',
-          muscleGroups: [{ name: 'chest', intensity: 'primary', growthPercentage: 3.0 }],
-          xpContribution: 50
-        },
-        {
-            id: createId('ex'),
-            questId: '',
-            exerciseType: 'sit-ups',
-            targetReps: 20 + rank * 5,
-            repsLogged: 0,
-            state: 'locked',
-            muscleGroups: [{ name: 'core', intensity: 'primary', growthPercentage: 3.5 }],
-            xpContribution: 50
-        }
-      ],
-      xpReward: 100,
+      questName: `Rank ${rank} Daily Challenge`,
+      exercises: selected.map(ex => ({
+        id: createId('ex'),
+        questId: '',
+        exerciseType: ex.type as ExerciseInstance['exerciseType'],
+        targetReps: ex.unit ? undefined : ex.base + rank * ex.inc,
+        targetDistance: ex.unit === 'm' ? ex.base + rank * ex.inc : undefined,
+        repsLogged: ex.unit ? undefined : 0,
+        distanceLogged: ex.unit === 'm' ? 0 : undefined,
+        state: 'locked' as const,
+        muscleGroups: ex.muscles as ExerciseInstance['muscleGroups'],
+        xpContribution: 50 + rank * 10
+      })),
+      xpReward: 150 + rank * 50,
       isCompleted: false
     };
+
     quest.exercises.forEach(ex => ex.questId = quest.id);
 
     await saveDailyQuest(quest);

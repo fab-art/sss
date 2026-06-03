@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { AchievementList } from '../features/achievements/AchievementList';
 import { Dashboard } from '../features/dashboard/Dashboard';
 import { Onboarding } from '../features/onboarding/Onboarding';
@@ -37,16 +38,26 @@ export function App() {
             </p>
           )}
 
-          {activeTab === 'home' && <Dashboard onStartTraining={navigateToTrain} onViewNutrition={navigateToNutrition} />}
-          {activeTab === 'train' && <WorkoutLogger />}
-          {activeTab === 'nutrition' && <NutritionTracker />}
-          {activeTab === 'wins' && (
-              <div className="space-y-6">
-                  <h2 className="text-3xl font-black text-white px-2">Your Victories</h2>
-                  <AchievementList />
-              </div>
-          )}
-          {activeTab === 'profile' && <ProfilePanel />}
+          <AnimatePresence mode="wait">
+            <motion.div
+              key={activeTab}
+              initial={{ opacity: 0, x: 10 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: -10 }}
+              transition={{ duration: 0.15 }}
+            >
+              {activeTab === 'home' && <Dashboard onStartTraining={navigateToTrain} onViewNutrition={navigateToNutrition} />}
+              {activeTab === 'train' && <WorkoutLogger />}
+              {activeTab === 'nutrition' && <NutritionTracker />}
+              {activeTab === 'wins' && (
+                  <div className="space-y-6">
+                      <h2 className="text-3xl font-black text-white px-2">Your Victories</h2>
+                      <AchievementList />
+                  </div>
+              )}
+              {activeTab === 'profile' && <ProfilePanel />}
+            </motion.div>
+          </AnimatePresence>
         </div>
       </div>
 
