@@ -1,10 +1,11 @@
 import { motion } from 'framer-motion';
+import { useState } from 'react';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { useUserStore } from '../../store/useUserStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
-import { Moon, Flame, Footprints, CheckCircle2, Circle } from 'lucide-react';
+import { Moon, Flame, CheckCircle2, Circle } from 'lucide-react';
 import { useNutritionStore } from '../../store/useNutritionStore';
 import type { DailyNutritionSummary } from '../../domain/types';
 
@@ -17,6 +18,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
   const { heroName } = useUserStore();
   const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
   const { getSummary, protocol } = useNutritionStore();
+  const [stepInput, setStepInput] = useState<string>('3842');
 
   const currentRank = getRankForXp(progression.totalXp);
   const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
@@ -30,7 +32,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
     ? (activeQuest.exercises.filter(ex => ex.state === 'completed').length / activeQuest.exercises.length) * 100
     : 0;
 
-  const currentSteps = 3842; // This would normally come from a pedometer API
+  const currentSteps = parseInt(stepInput) || 0;
   const stepPercent = runningProgress.stepGoal
     ? (currentSteps / runningProgress.stepGoal) * 100
     : 0;
@@ -147,7 +149,12 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                       />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-lg font-black text-white"><Footprints className="w-4 h-4 inline mb-1" /> {currentSteps.toLocaleString()}</span>
+                      <input
+                          type="number"
+                          value={stepInput}
+                          onChange={(e) => setStepInput(e.target.value)}
+                          className="w-16 bg-transparent text-center text-lg font-black text-white focus:outline-none"
+                      />
                       <span className="text-[10px] font-bold text-slate-500 uppercase">steps</span>
                   </div>
               </div>
