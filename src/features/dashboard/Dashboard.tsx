@@ -4,8 +4,9 @@ import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { useUserStore } from '../../store/useUserStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
-import { Moon, Flame, Footprints, ChevronRight, CheckCircle2, Circle } from 'lucide-react';
+import { Moon, Flame, Footprints, CheckCircle2, Circle } from 'lucide-react';
 import { useNutritionStore } from '../../store/useNutritionStore';
+import type { DailyNutritionSummary } from '../../domain/types';
 
 interface DashboardProps {
     onStartTraining?: () => void;
@@ -13,16 +14,14 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) {
-  const heroName = useUserStore((state) => state.heroName);
-  const { progression, streak, activeQuest, runningProgress, startQuest } = useProgressionStore();
+  const { heroName } = useUserStore();
+  const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
   const { getSummary, protocol } = useNutritionStore();
-
-  void heroName;
 
   const currentRank = getRankForXp(progression.totalXp);
   const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
 
-  const nutritionSummary = getSummary(0);
+  const nutritionSummary = getSummary(0) as (DailyNutritionSummary & { targets?: { proteinG: number; carbsG: number; fatG: number } });
   const caloriePercent = nutritionSummary
     ? (nutritionSummary.totalCaloriesConsumed / nutritionSummary.totalAllowance) * 100
     : 0;
@@ -31,8 +30,9 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
     ? (activeQuest.exercises.filter(ex => ex.state === 'completed').length / activeQuest.exercises.length) * 100
     : 0;
 
+  const currentSteps = 3842; // This would normally come from a pedometer API
   const stepPercent = runningProgress.stepGoal
-    ? (3842 / runningProgress.stepGoal) * 100
+    ? (currentSteps / runningProgress.stepGoal) * 100
     : 0;
 
   const handleStart = async () => {
@@ -63,11 +63,11 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
         <div className="relative z-10">
             <div className="flex justify-between items-end mb-4">
                 <div>
-                    <h2 className="text-2xl font-black text-cyan-400">Rank 1: {currentRank.title}</h2>
+                    <h2 className="text-2xl font-black text-cyan-400">{currentRank.title}</h2>
                     <p className="text-sm font-bold text-slate-400">Level {progression.level} • {getXpIntoLevel(progression.totalXp)}/{getXpRequiredForNextLevel()} XP</p>
                 </div>
                 <div className="text-xs font-black text-orange-400 uppercase tracking-widest flex items-center gap-1">
-                    Next: Trainee <ChevronRight className="w-3 h-3" />
+                    {heroName}
                 </div>
             </div>
             <div className="h-3 w-full bg-white/5 rounded-full overflow-hidden">
@@ -147,7 +147,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                       />
                   </svg>
                   <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-lg font-black text-white"><Footprints className="w-4 h-4 inline mb-1" /> 3,842</span>
+                      <span className="text-lg font-black text-white"><Footprints className="w-4 h-4 inline mb-1" /> {currentSteps.toLocaleString()}</span>
                       <span className="text-[10px] font-bold text-slate-500 uppercase">steps</span>
                   </div>
               </div>
@@ -162,7 +162,15 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   <p className="text-[10px] font-bold text-slate-500 uppercase mt-2">
                     Phase {runningProgress.phase} of 3 • Build the habit
                   </p>
-                  <p className="text-[10px] font-bold text-emerald-400">≈ 2.9 km walked</p>
+                  <div className="flex justify-between items-center mt-2">
+                    <p className="text-[10px] font-bold text-emerald-400">≈ {Math.round(currentSteps * 0.000762 * 10) / 10} km walked</p>
+                    <button
+                        onClick={() => syncSteps(currentSteps)}
+                        className="text-[10px] font-black text-cyan-400 uppercase tracking-widest border border-cyan-400/30 px-2 py-0.5 rounded hover:bg-cyan-400/10 transition"
+                    >
+                        Sync
+                    </button>
+                  </div>
               </div>
           </div>
       </div>
@@ -208,28 +216,28 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                 <div className="space-y-1">
                     <div className="flex justify-between text-[10px] font-black uppercase text-slate-500">
                         <span>Protein</span>
-                        <span className="text-white">42g</span>
+                        <span className="text-white">{nutritionSummary?.targets?.proteinG || 0}g</span>
                     </div>
                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-pink-500 w-[60%]" />
+                        <div className="h-full bg-pink-500" style={{ width: '40%' }} />
                     </div>
                 </div>
                 <div className="space-y-1">
                     <div className="flex justify-between text-[10px] font-black uppercase text-slate-500">
                         <span>Carbs</span>
-                        <span className="text-white">95g</span>
+                        <span className="text-white">{nutritionSummary?.targets?.carbsG || 0}g</span>
                     </div>
                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-indigo-500 w-[75%]" />
+                        <div className="h-full bg-indigo-500" style={{ width: '40%' }} />
                     </div>
                 </div>
                 <div className="space-y-1">
                     <div className="flex justify-between text-[10px] font-black uppercase text-slate-500">
                         <span>Fat</span>
-                        <span className="text-white">28g</span>
+                        <span className="text-white">{nutritionSummary?.targets?.fatG || 0}g</span>
                     </div>
                     <div className="h-1 w-full bg-white/5 rounded-full overflow-hidden">
-                        <div className="h-full bg-orange-500 w-[40%]" />
+                        <div className="h-full bg-orange-500" style={{ width: '40%' }} />
                     </div>
                 </div>
               </div>
