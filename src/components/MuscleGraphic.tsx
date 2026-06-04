@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,7 +12,11 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-slate-700/70 stroke-slate-500/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
+/**
+ * Performance Optimization: Memoized complex SVG component.
+ * Prevents expensive path recalculations and DOM diffing when 'growth' prop is stable.
+ */
+export const MuscleGraphic = memo(function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
   const opacityFactor = (growth: number) => 0.3 + (growth / 100) * 0.7;
@@ -121,4 +126,4 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
       </svg>
     </div>
   );
-}
+});

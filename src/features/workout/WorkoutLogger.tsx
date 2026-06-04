@@ -1,8 +1,9 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Trophy, ChevronRight, Target, List, Play, Square, CheckCircle2 } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
+import type { MuscleGrowth } from '../../domain/types';
 
 export function QuestRewardModal({ onClose }: { onClose: () => void }) {
   const { progression, activeQuest, streak } = useProgressionStore();
@@ -185,27 +186,20 @@ export function WorkoutLogger() {
   const [showReward, setShowReward] = useState(false);
   const [manualEntry, setManualEntry] = useState('');
 
-  const { progression, startQuest } = useProgressionStore();
+  // Performance: Memoize growth projection to prevent redundant O(E*M) calculations
+  // E = number of exercises, M = number of muscle groups per exercise.
+  // This stabilizes the reference for the memoized MuscleGraphic component.
+  const projectedGrowth = useMemo(() => {
+    if (!activeQuest) return null;
+    return activeQuest.exercises.reduce((acc, ex) => {
+      ex.muscleGroups.forEach(mg => {
+        acc[mg.name] = (acc[mg.name] || 0) + (ex.repsLogged ? (ex.repsLogged / (ex.targetReps || 1)) * mg.growthPercentage : 0);
+      });
+      return acc;
+    }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 } as MuscleGrowth);
+  }, [activeQuest]);
 
-  if (!activeQuest) {
-    return (
-        <section className="max-w-xl mx-auto min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 pb-24 font-sans text-center space-y-8">
-            <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center border border-primary/20 shadow-2xl">
-                <Target className="w-12 h-12 text-primary" />
-            </div>
-            <div className="space-y-2">
-                <h2 className="text-3xl font-black italic uppercase tracking-tighter">No Active Quest</h2>
-                <p className="text-zinc-500 font-medium px-8">Initialize your daily protocol to begin training and earn XP.</p>
-            </div>
-            <button
-                onClick={() => startQuest(progression.level)}
-                className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
-            >
-                Start Daily Protocol
-            </button>
-        </section>
-    );
-  }
+  if (!activeQuest) return null;
 
   const activeEx = activeQuest.exercises[activeExIdx];
 
@@ -297,16 +291,35 @@ export function WorkoutLogger() {
                   </div>
               </div>
 
-              {isAllComplete && (
-                <motion.button
-                    initial={{ scale: 0.9, opacity: 0 }}
-                    animate={{ scale: 1, opacity: 1 }}
-                    onClick={handleCompleteQuest}
-                    className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 animate-pulse"
-                >
-                    Extract Rewards
-                </motion.button>
-              )}
+          <div className="w-full max-w-[280px] bg-zinc-900/50 rounded-[2.5rem] p-8 border border-white/5">
+                {projectedGrowth && <MuscleGraphic growth={projectedGrowth} />}
+          </div>
+      </div>
+
+      {/* Control Module */}
+      <div className="space-y-6 mt-12">
+          <div className="grid grid-cols-3 gap-3">
+              <button
+                onClick={() => updateExerciseProgress(activeEx.id, (activeEx.repsLogged || 0) + 1)}
+                className="col-span-1 py-8 rounded-3xl bg-zinc-900 border border-white/5 flex flex-col items-center justify-center gap-2 hover:bg-zinc-800 active:scale-95 transition-all"
+              >
+                  <span className="text-3xl font-black text-primary">+1</span>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Single</span>
+              </button>
+              <button
+                onClick={() => updateExerciseProgress(activeEx.id, (activeEx.repsLogged || 0) + 5)}
+                className="col-span-1 py-8 rounded-3xl bg-zinc-900 border border-white/5 flex flex-col items-center justify-center gap-2 hover:bg-zinc-800 active:scale-95 transition-all"
+              >
+                  <span className="text-3xl font-black text-white">+5</span>
+                  <span className="text-[9px] font-black text-zinc-500 uppercase tracking-widest">Burst</span>
+              </button>
+              <button
+                onClick={() => updateExerciseProgress(activeEx.id, (activeEx.repsLogged || 0) + 10)}
+                className="col-span-1 py-8 rounded-3xl bg-primary flex flex-col items-center justify-center gap-2 active:scale-95 transition-all shadow-xl shadow-primary/20"
+              >
+                  <span className="text-3xl font-black text-black">+10</span>
+                  <span className="text-[9px] font-black text-black/50 uppercase tracking-widest">Max</span>
+              </button>
           </div>
       ) : (
           <div className="flex-1 flex flex-col">
