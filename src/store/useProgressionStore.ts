@@ -97,13 +97,8 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
       { type: 'distance-run', base: 1000, inc: 500, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 6.0 }] }
     ];
 
-    // Select 3 unique exercises based on date to rotate
-    const dayOffset = new Date().getDate();
-    const selected = [
-      pool[(dayOffset) % pool.length],
-      pool[(dayOffset + 1) % pool.length],
-      pool[(dayOffset + 2) % pool.length]
-    ];
+    // Include all 5 exercises in every quest
+    const selected = pool;
 
     const quest: DailyQuest = {
       id: createId('quest'),
