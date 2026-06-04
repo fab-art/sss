@@ -80,7 +80,7 @@ export function applyQuestRewards(
 }
 
 /**
- * Logic for the 3-Phase Running Evolution.
+ * Logic for the 3-Phase Walking Evolution.
  */
 export function evaluateRunningPhaseProgression(
   current: RunningProgress,
@@ -91,7 +91,7 @@ export function evaluateRunningPhaseProgression(
   let readyForNextPhase = false;
   let stepGoal = current.stepGoal;
   let lightRunMeters = current.lightRunMeters;
-  let distanceRunKm = current.distanceRunKm;
+  let walkingKm = current.walkingKm;
 
   // Phase transition rules
   if (daysInPhase >= 7) {
@@ -102,15 +102,15 @@ export function evaluateRunningPhaseProgression(
       readyForNextPhase = true;
     } else if (phase === 2) {
       phase = 3;
-      distanceRunKm = 1.0;
+      walkingKm = 1.0;
       readyForNextPhase = true;
     }
   }
 
   // Phase 3 auto-progression: +0.25km every 14 days of consistency
   if (phase === 3 && daysInPhase > 0 && daysInPhase % 14 === 0) {
-    distanceRunKm = (distanceRunKm || 1.0) + 0.25;
-    if (distanceRunKm > 2.0) distanceRunKm = 2.0; // Cap at 2km for MVP
+    walkingKm = (walkingKm || 1.0) + 0.25;
+    if (walkingKm > 5.0) walkingKm = 5.0; // Cap at 5km
   }
 
   return {
@@ -120,7 +120,7 @@ export function evaluateRunningPhaseProgression(
     readyForNextPhase,
     stepGoal,
     lightRunMeters,
-    distanceRunKm,
+    walkingKm,
     lastUpdated: new Date().toISOString()
   };
 }

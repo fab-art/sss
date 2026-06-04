@@ -1,5 +1,4 @@
 import { motion } from 'framer-motion';
-import { useState } from 'react';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
@@ -28,7 +27,10 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
     : 0;
 
 
-  const [currentSteps, setCurrentSteps] = useState(3842); // This would normally come from a pedometer API
+  const currentSteps = activeQuest?.exercises
+    .filter(ex => ex.exerciseType === 'walking' || ex.exerciseType === 'footsteps')
+    .reduce((acc, ex) => acc + Math.round((ex.distanceLogged || 0) * 1.31), 0) || 0;
+
   const stepPercent = runningProgress.stepGoal
     ? (currentSteps / runningProgress.stepGoal) * 100
     : 0;
@@ -107,8 +109,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   />
               </div>
               <div className="flex gap-2">
-                  <button onClick={() => setCurrentSteps(s => s + 500)} className="flex-1 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-white/10 transition">+</button>
-                  <button onClick={() => syncSteps(currentSteps)} className="flex-1 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition">Sync</button>
+                  <button onClick={() => syncSteps(currentSteps)} className="w-full py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition">Sync to Phase</button>
               </div>
           </div>
 

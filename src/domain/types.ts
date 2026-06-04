@@ -76,7 +76,7 @@ export type User = {
 
 // --- NEW V2 TYPES ---
 
-export type ExerciseType = 'push-ups' | 'sit-ups' | 'squats' | 'light-run' | 'distance-run' | 'footsteps';
+export type ExerciseType = 'push-ups' | 'sit-ups' | 'squats' | 'light-run' | 'walking' | 'footsteps';
 
 export interface MuscleGroupImpact {
   name: keyof MuscleGrowth;
@@ -114,10 +114,10 @@ export interface DailyQuest {
 
 export interface RunningProgress {
   userId: string;
-  phase: 1 | 2 | 3; // 1: Footsteps, 2: Light Runs, 3: Distance Running
+  phase: 1 | 2 | 3; // 1: Footsteps, 2: Light Runs, 3: Walking
   stepGoal?: number;
   lightRunMeters?: number;
-  distanceRunKm?: number;
+  walkingKm?: number;
   daysInPhase: number;
   readyForNextPhase: boolean;
   lastUpdated: string;

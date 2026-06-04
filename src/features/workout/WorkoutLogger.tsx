@@ -85,7 +85,7 @@ function calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lo
     return R * c;
 }
 
-function GpsTracker({ targetDistance, onComplete }: { targetDistance: number, onComplete: (distance: number) => void }) {
+function GpsTracker({ targetDistance, onComplete, exerciseType }: { targetDistance: number, onComplete: (distance: number) => void, exerciseType: string }) {
     const [isTracking, setIsTracking] = useState(false);
     const [distance, setDistance] = useState(0);
     const [path, setPath] = useState<{x: number, y: number}[]>([]);
@@ -224,13 +224,25 @@ function GpsTracker({ targetDistance, onComplete }: { targetDistance: number, on
                 <div className="flex items-baseline justify-center gap-2">
                     <input
                         type="number"
-                        value={Math.round(distance) || ''}
-                        onChange={(e) => setDistance(parseInt(e.target.value) || 0)}
+                        value={(exerciseType === 'walking' || exerciseType === 'footsteps') ? Math.round(distance * 1.31) : Math.round(distance) || ''}
+                        onChange={(e) => {
+                            const val = parseInt(e.target.value) || 0;
+                            if (exerciseType === 'walking' || exerciseType === 'footsteps') {
+                                setDistance(val / 1.31);
+                            } else {
+                                setDistance(val);
+                            }
+                        }}
                         className="w-48 bg-transparent text-7xl font-black italic tracking-tighter tabular-nums text-center outline-none border-b-2 border-transparent focus:border-primary/30"
                     />
-                    <span className="text-xl text-zinc-600 uppercase italic not-italic font-bold">m</span>
+                    <span className="text-xl text-zinc-600 uppercase italic not-italic font-bold">
+                        {(exerciseType === 'walking' || exerciseType === 'footsteps') ? 'steps' : 'm'}
+                    </span>
                 </div>
-                <p className="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em]">Target: {targetDistance}m</p>
+                <p className="text-xs font-bold text-zinc-500 uppercase tracking-[0.2em]">
+                    Target: {(exerciseType === 'walking' || exerciseType === 'footsteps') ? Math.round(targetDistance * 1.31) : targetDistance}
+                    {(exerciseType === 'walking' || exerciseType === 'footsteps') ? ' steps' : 'm'}
+                </p>
             </div>
 
             {!isTracking ? (
@@ -362,7 +374,14 @@ export function WorkoutLogger() {
                                   )}
                                   <div className="text-left">
                                       <p className={`font-black uppercase italic ${ex.state === 'completed' ? 'text-zinc-500 line-through' : 'text-white'}`}>{ex.exerciseType.split('-').join(' ')}</p>
-                                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">{ex.repsLogged || ex.distanceLogged || 0} / {ex.targetReps || ex.targetDistance} {ex.targetReps ? 'reps' : 'm'}</p>
+                                      <p className="text-[10px] font-bold text-zinc-500 uppercase tracking-widest">
+                                          {ex.targetReps
+                                            ? `${ex.repsLogged || 0} / ${ex.targetReps} reps`
+                                            : (ex.exerciseType as string) === 'walking' || (ex.exerciseType as string) === 'footsteps'
+                                                ? `${Math.round((ex.distanceLogged || 0) * 1.31)} / ${Math.round((ex.targetDistance || 0) * 1.31)} steps`
+                                                : `${ex.distanceLogged || 0} / ${ex.targetDistance} m`
+                                          }
+                                      </p>
                                   </div>
                               </div>
                               <ChevronRight className="w-5 h-5 text-zinc-700" />
@@ -384,10 +403,11 @@ export function WorkoutLogger() {
           </div>
       ) : (
           <div className="flex-1 flex flex-col">
-              {activeEx.exerciseType.includes('run') || activeEx.exerciseType === 'footsteps' ? (
+              {(activeEx.exerciseType as string).includes('run') || (activeEx.exerciseType as string) === 'walking' || (activeEx.exerciseType as string) === 'footsteps' ? (
                   <GpsTracker
                     targetDistance={activeEx.targetDistance || 0}
                     onComplete={(d) => updateExerciseProgress(activeEx.id, undefined, (activeEx.distanceLogged || 0) + Math.round(d))}
+                    exerciseType={activeEx.exerciseType}
                   />
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-12">
@@ -408,7 +428,14 @@ export function WorkoutLogger() {
                             <div className="text-8xl font-black tracking-tighter italic leading-none tabular-nums">
                                 {activeEx.repsLogged || 0}
                             </div>
-                            <p className="text-sm font-bold text-zinc-600 mt-4 uppercase tracking-widest">Target {activeEx.targetReps}</p>
+                                <span className="text-[10px] font-bold text-zinc-500 uppercase">
+                                    {activeEx.targetReps
+                                        ? `${activeEx.targetReps} reps`
+                                        : (activeEx.exerciseType as string) === 'walking' || (activeEx.exerciseType as string) === 'footsteps'
+                                            ? `${Math.round((activeEx.targetDistance || 0) * 1.31)} steps`
+                                            : `${activeEx.targetDistance} m`
+                                    }
+                                </span>
                         </div>
                     </div>
 
