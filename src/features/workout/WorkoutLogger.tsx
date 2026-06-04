@@ -70,42 +70,116 @@ export function QuestRewardModal({ onClose }: { onClose: () => void }) {
   );
 }
 
+function calculateHaversineDistance(lat1: number, lon1: number, lat2: number, lon2: number): number {
+    const R = 6371e3; // Earth radius in meters
+    const φ1 = lat1 * Math.PI / 180;
+    const φ2 = lat2 * Math.PI / 180;
+    const Δφ = (lat2 - lat1) * Math.PI / 180;
+    const Δλ = (lon2 - lon1) * Math.PI / 180;
+
+    const a = Math.sin(Δφ / 2) * Math.sin(Δφ / 2) +
+              Math.cos(φ1) * Math.cos(φ2) *
+              Math.sin(Δλ / 2) * Math.sin(Δλ / 2);
+    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+
+    return R * c;
+}
+
 function GpsTracker({ targetDistance, onComplete }: { targetDistance: number, onComplete: (distance: number) => void }) {
     const [isTracking, setIsTracking] = useState(false);
     const [distance, setDistance] = useState(0);
     const [path, setPath] = useState<{x: number, y: number}[]>([]);
     const [time, setTime] = useState(0);
     const timerRef = useRef<NodeJS.Timeout | null>(null);
+    const watchRef = useRef<number | null>(null);
+    const lastPosRef = useRef<{lat: number, lon: number} | null>(null);
+    const simulationRef = useRef<boolean>(false);
 
     const startTracking = () => {
         setIsTracking(true);
         setDistance(0);
-        setPath([{x: 50, y: 150}]);
+        setPath([]);
+        setTime(0);
+        lastPosRef.current = null;
 
         timerRef.current = setInterval(() => {
             setTime(t => t + 1);
-            setDistance(prev => {
-                const next = prev + (Math.random() * 5 + 2);
-                return next;
-            });
+        }, 1000);
+
+        if ("geolocation" in navigator) {
+            watchRef.current = navigator.geolocation.watchPosition(
+                (position) => {
+                    simulationRef.current = false;
+                    const { latitude, longitude } = position.coords;
+
+                    if (lastPosRef.current) {
+                        const delta = calculateHaversineDistance(
+                            lastPosRef.current.lat,
+                            lastPosRef.current.lon,
+                            latitude,
+                            longitude
+                        );
+                        // Filter out GPS noise (less than 1m or extremely fast jumps)
+                        if (delta > 1 && delta < 30) {
+                            setDistance(prev => prev + delta);
+                        }
+                    }
+
+                    lastPosRef.current = { lat: latitude, lon: longitude };
+
+                    // Update visual path (scaled)
+                    setPath(prev => {
+                        const last = prev[prev.length - 1] || { x: 195, y: 150 };
+                        return [...prev, {
+                            x: last.x + (Math.random() * 4 - 2),
+                            y: last.y - (Math.random() * 4)
+                        }].slice(-50);
+                    });
+                },
+                (error) => {
+                    console.error("GPS Error:", error);
+                    startSimulation();
+                },
+                { enableHighAccuracy: true, timeout: 5000, maximumAge: 0 }
+            );
+        } else {
+            startSimulation();
+        }
+    };
+
+    const startSimulation = () => {
+        if (simulationRef.current) return;
+        simulationRef.current = true;
+        console.warn("Using simulation mode");
+
+        const simInterval = setInterval(() => {
+            if (!isTracking) {
+                clearInterval(simInterval);
+                return;
+            }
+            setDistance(prev => prev + (Math.random() * 2 + 1));
             setPath(prev => {
-                const last = prev[prev.length - 1];
+                const last = prev[prev.length - 1] || { x: 195, y: 150 };
                 return [...prev, {
-                    x: last.x + (Math.random() * 10 - 2),
-                    y: last.y - (Math.random() * 8 + 2)
+                    x: last.x + (Math.random() * 6 - 3),
+                    y: last.y - (Math.random() * 5 + 1)
                 }].slice(-50);
             });
-        }, 1000);
+        }, 2000);
     };
 
     const stopTracking = () => {
         if (timerRef.current) clearInterval(timerRef.current);
+        if (watchRef.current !== null) navigator.geolocation.clearWatch(watchRef.current);
         setIsTracking(false);
         onComplete(distance);
     };
 
     useEffect(() => {
-        return () => { if (timerRef.current) clearInterval(timerRef.current); };
+        return () => {
+            if (timerRef.current) clearInterval(timerRef.current);
+            if (watchRef.current !== null) navigator.geolocation.clearWatch(watchRef.current);
+        };
     }, []);
 
     const svgPath = path.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ');
@@ -313,7 +387,7 @@ export function WorkoutLogger() {
               {activeEx.exerciseType.includes('run') || activeEx.exerciseType === 'footsteps' ? (
                   <GpsTracker
                     targetDistance={activeEx.targetDistance || 0}
-                    onComplete={(d) => updateExerciseProgress(activeEx.id, undefined, Math.round(d))}
+                    onComplete={(d) => updateExerciseProgress(activeEx.id, undefined, (activeEx.distanceLogged || 0) + Math.round(d))}
                   />
               ) : (
                 <div className="flex-1 flex flex-col items-center justify-center space-y-12">
