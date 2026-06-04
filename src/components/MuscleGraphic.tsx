@@ -1,26 +1,26 @@
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
-  chest: 'fill-orange-400/80 stroke-orange-200',
-  core: 'fill-fuchsia-400/75 stroke-fuchsia-200',
-  legs: 'fill-cyan-400/75 stroke-cyan-200',
-  shoulders: 'fill-orange-400/80 stroke-orange-200',
-  back: 'fill-emerald-400/75 stroke-emerald-200',
-  cardio: 'fill-emerald-400/75 stroke-emerald-200'
+  chest: 'fill-primary/80 stroke-primary/30',
+  core: 'fill-emerald-400/75 stroke-emerald-200/30',
+  legs: 'fill-green-400/75 stroke-green-200/30',
+  shoulders: 'fill-primary/80 stroke-primary/30',
+  back: 'fill-emerald-600/75 stroke-emerald-400/30',
+  cardio: 'fill-primary/90 stroke-white/20'
 };
 
-const inactiveMuscle = 'fill-slate-700/70 stroke-slate-500/50';
+const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
 export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
-  const opacityFactor = (growth: number) => 0.3 + (growth / 100) * 0.7;
+  const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
 
   return (
-    <div className="rounded-[1.5rem] border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-black/40">
+    <div className="rounded-[2.5rem] border border-white/5 bg-black/40 p-6 shadow-inner">
       <svg
         aria-labelledby="muscle-physique-title"
-        className="mx-auto h-64 w-full max-w-64 drop-shadow-[0_0_18px_rgba(249,115,22,0.18)]"
+        className="mx-auto h-64 w-full max-w-64 drop-shadow-[0_0_20px_rgba(34,197,94,0.15)]"
         role="img"
         viewBox="0 0 160 220"
       >
