@@ -1,11 +1,11 @@
 import { motion } from 'framer-motion';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { useUserStore } from '../../store/useUserStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
-import { Flame, Footprints, CheckCircle2, Trophy, Check } from 'lucide-react';
+import { Flame, Footprints, CheckCircle2, Trophy } from 'lucide-react';
 import { useNutritionStore } from '../../store/useNutritionStore';
 import type { DailyNutritionSummary } from '../../domain/types';
 
@@ -29,7 +29,6 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
 
 
   const [currentSteps, setCurrentSteps] = useState(3842); // This would normally come from a pedometer API
-  const [isSynced, setIsSynced] = useState(false);
   const stepPercent = runningProgress.stepGoal
     ? (currentSteps / runningProgress.stepGoal) * 100
     : 0;
@@ -38,22 +37,6 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
       await startQuest(1);
       onStartTraining?.();
   };
-
-  const handleSync = async () => {
-    try {
-      await syncSteps(currentSteps);
-      setIsSynced(true);
-    } catch (error) {
-      console.error('Failed to sync steps:', error);
-    }
-  };
-
-  useEffect(() => {
-    if (isSynced) {
-      const timer = setTimeout(() => setIsSynced(false), 2000);
-      return () => clearTimeout(timer);
-    }
-  }, [isSynced]);
 
   return (
     <section className="max-w-xl mx-auto space-y-8 pb-24">
@@ -124,23 +107,8 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   />
               </div>
               <div className="flex gap-2">
-                  <button
-                    aria-label="Add 500 steps"
-                    onClick={() => setCurrentSteps(s => s + 500)}
-                    className="flex-1 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-white/10 transition"
-                  >
-                    +
-                  </button>
-                  <button
-                    onClick={handleSync}
-                    className={`flex-1 py-2 rounded-xl text-[10px] font-black uppercase transition-all flex items-center justify-center gap-1 ${isSynced ? 'bg-primary text-black' : 'bg-primary/10 text-primary hover:bg-primary/20'}`}
-                  >
-                    {isSynced ? (
-                        <>
-                            <Check className="w-3 h-3" /> Synced
-                        </>
-                    ) : 'Sync'}
-                  </button>
+                  <button onClick={() => setCurrentSteps(s => s + 500)} className="flex-1 py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-white/10 transition">+</button>
+                  <button onClick={() => syncSteps(currentSteps)} className="flex-1 py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition">Sync</button>
               </div>
           </div>
 
