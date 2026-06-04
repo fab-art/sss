@@ -94,7 +94,7 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
       { type: 'sit-ups', base: 15, inc: 5, muscles: [{ name: 'core', intensity: 'primary', growthPercentage: 3.5 }] },
       { type: 'squats', base: 20, inc: 5, muscles: [{ name: 'legs', intensity: 'primary', growthPercentage: 3.0 }] },
       { type: 'light-run', base: 500, inc: 250, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 4.0 }] },
-      { type: 'distance-run', base: 1000, inc: 500, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 6.0 }] }
+      { type: 'walking', base: 1000, inc: 500, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 4.0 }] }
     ];
 
     // Include all 5 exercises in every quest
