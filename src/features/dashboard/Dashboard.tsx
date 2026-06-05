@@ -1,10 +1,11 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { useUserStore } from '../../store/useUserStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
-import { Flame, Footprints, CheckCircle2, Trophy } from 'lucide-react';
+import { Flame, Footprints, CheckCircle2, Trophy, Check } from 'lucide-react';
 import { useNutritionStore } from '../../store/useNutritionStore';
 import type { DailyNutritionSummary } from '../../domain/types';
 
@@ -17,6 +18,14 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
   const { heroName } = useUserStore();
   const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
   const { getSummary } = useNutritionStore();
+  const [synced, setSynced] = useState(false);
+
+  useEffect(() => {
+    if (synced) {
+      const timer = setTimeout(() => setSynced(false), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [synced]);
 
   const currentRank = getRankForXp(progression.totalXp);
   const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
@@ -109,7 +118,23 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   />
               </div>
               <div className="flex gap-2">
-                  <button onClick={() => syncSteps(currentSteps)} className="w-full py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition">Sync to Phase</button>
+                  <button
+                    onClick={() => {
+                        setSynced(true);
+                        syncSteps(currentSteps);
+                    }}
+                    disabled={synced}
+                    className={`w-full py-2 rounded-xl text-[10px] font-black uppercase transition flex items-center justify-center gap-1 ${synced ? 'bg-primary text-black' : 'bg-primary/10 text-primary hover:bg-primary/20'}`}
+                  >
+                      {synced ? (
+                          <>
+                              <Check className="w-3 h-3" />
+                              Synced
+                          </>
+                      ) : (
+                          'Sync to Phase'
+                      )}
+                  </button>
               </div>
           </div>
 
