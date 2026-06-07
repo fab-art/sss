@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
@@ -17,6 +18,14 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
   const { heroName } = useUserStore();
   const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
   const { getSummary } = useNutritionStore();
+  const [isSynced, setIsSynced] = useState(false);
+
+  useEffect(() => {
+    if (isSynced) {
+        const timer = setTimeout(() => setIsSynced(false), 2000);
+        return () => clearTimeout(timer);
+    }
+  }, [isSynced]);
 
   const currentRank = getRankForXp(progression.totalXp);
   const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
@@ -38,6 +47,11 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
   const handleStart = async () => {
       await startQuest(1);
       onStartTraining?.();
+  };
+
+  const handleSync = async () => {
+    await syncSteps(currentSteps);
+    setIsSynced(true);
   };
 
   return (
@@ -109,7 +123,20 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   />
               </div>
               <div className="flex gap-2">
-                  <button onClick={() => syncSteps(currentSteps)} className="w-full py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition">Sync to Phase</button>
+                  <button
+                    onClick={handleSync}
+                    aria-label="Sync steps to running phase progression"
+                    className="w-full py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition flex items-center justify-center gap-2"
+                  >
+                      {isSynced ? (
+                          <>
+                            <CheckCircle2 className="w-3 h-3" />
+                            Synced
+                          </>
+                      ) : (
+                          'Sync to Phase'
+                      )}
+                  </button>
               </div>
           </div>
 
