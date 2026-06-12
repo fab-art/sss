@@ -15,7 +15,7 @@ export default {
         black: ['Inter Black', 'system-ui', 'sans-serif']
       },
       animation: {
-        'spin-slow': 'spin 3s linear infinite',
+        'spin-slow': 'spin 3s linear infinite'
       }
     }
   },

@@ -76,7 +76,13 @@ export type User = {
 
 // --- NEW V2 TYPES ---
 
-export type ExerciseType = 'push-ups' | 'sit-ups' | 'squats' | 'light-run' | 'walking' | 'footsteps';
+export type ExerciseType =
+  | 'push-ups'
+  | 'sit-ups'
+  | 'squats'
+  | 'light-run'
+  | 'walking'
+  | 'footsteps';
 
 export interface MuscleGroupImpact {
   name: keyof MuscleGrowth;
@@ -186,36 +192,36 @@ export interface DailyNutritionSummary {
 
 // Keep legacy for compatibility if needed, but we'll migrate
 export type FastingSession = {
-    id: string;
-    date: string;
-    protocolType: string;
-    fastingStartTime: string;
-    eatingWindowStart: string;
-    eatingWindowEnd: string;
-    totalFastingHours: number;
-    completedSuccessfully: boolean;
+  id: string;
+  date: string;
+  protocolType: string;
+  fastingStartTime: string;
+  eatingWindowStart: string;
+  eatingWindowEnd: string;
+  totalFastingHours: number;
+  completedSuccessfully: boolean;
 };
 
 export type Meal = {
-    id: string;
-    date: string;
-    timestamp: string;
-    foodName: string;
-    servingSize: string;
-    calories: number;
-    protein: number;
-    carbs: number;
-    fat: number;
-    foodCategory: string;
+  id: string;
+  date: string;
+  timestamp: string;
+  foodName: string;
+  servingSize: string;
+  calories: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  foodCategory: string;
 };
 
 export type NutritionProfile = {
-    userId: string;
-    weight: number;
-    goal: string;
-    deficit: number;
-    activityLevel: string;
-    preferredIfProtocol: FastingProtocolType;
-    eatingWindowStart: string;
-    eatingWindowEnd: string;
+  userId: string;
+  weight: number;
+  goal: string;
+  deficit: number;
+  activityLevel: string;
+  preferredIfProtocol: FastingProtocolType;
+  eatingWindowStart: string;
+  eatingWindowEnd: string;
 };

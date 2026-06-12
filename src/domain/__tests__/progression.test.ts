@@ -35,25 +35,25 @@ describe('HeroPath domain rules', () => {
 
   it('applies quest rewards correctly', () => {
     const quest: DailyQuest = {
-        id: 'q1',
-        date: '2026-06-02',
-        userId: 'u1',
-        rank: 1,
-        questName: 'Test Quest',
-        exercises: [
-            {
-                id: 'ex1',
-                questId: 'q1',
-                exerciseType: 'push-ups',
-                targetReps: 10,
-                repsLogged: 10,
-                state: 'completed',
-                muscleGroups: [{ name: 'chest', intensity: 'primary', growthPercentage: 5 }],
-                xpContribution: 50
-            }
-        ],
-        xpReward: 100,
-        isCompleted: true
+      id: 'q1',
+      date: '2026-06-02',
+      userId: 'u1',
+      rank: 1,
+      questName: 'Test Quest',
+      exercises: [
+        {
+          id: 'ex1',
+          questId: 'q1',
+          exerciseType: 'push-ups',
+          targetReps: 10,
+          repsLogged: 10,
+          state: 'completed',
+          muscleGroups: [{ name: 'chest', intensity: 'primary', growthPercentage: 5 }],
+          xpContribution: 50
+        }
+      ],
+      xpReward: 100,
+      isCompleted: true
     };
     const next = applyQuestRewards(initialProgression, quest);
 

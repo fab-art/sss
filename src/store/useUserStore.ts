@@ -24,7 +24,10 @@ type UserStore = {
 
 const storageKey = 'heropath:user-preferences';
 
-function loadPreferences(): Pick<UserStore, 'heroName' | 'theme' | 'hasCompletedOnboarding' | 'profile'> {
+function loadPreferences(): Pick<
+  UserStore,
+  'heroName' | 'theme' | 'hasCompletedOnboarding' | 'profile'
+> {
   const fallback = {
     heroName: 'New Hero',
     theme: 'dark' as Theme,
