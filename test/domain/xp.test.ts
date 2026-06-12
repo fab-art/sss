@@ -16,12 +16,14 @@ describe('XP calculation', () => {
 
     // duration 30, exercises 5, intensity 3
     // (25 + 90 + 40) * (1 + 0.45) = 155 * 1.45 = 224.75 -> 225
-    expect(calculateWorkoutXp({
-      completedAt: '2026-05-28',
-      durationMinutes: 30,
-      exercisesCompleted: 5,
-      intensity: 3
-    })).toBe(225);
+    expect(
+      calculateWorkoutXp({
+        completedAt: '2026-05-28',
+        durationMinutes: 30,
+        exercisesCompleted: 5,
+        intensity: 3
+      })
+    ).toBe(225);
   });
 
   it('derives level from total XP', () => {

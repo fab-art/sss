@@ -9,14 +9,11 @@ export function applyWorkoutToStreak(
     return current;
   }
 
-  const lastDate = current.lastWorkoutDate
-    ? new Date(current.lastWorkoutDate)
-    : null;
+  const lastDate = current.lastWorkoutDate ? new Date(current.lastWorkoutDate) : null;
   const currentDate = new Date(date);
 
   const isConsecutive =
-    lastDate &&
-    Math.floor((currentDate.getTime() - lastDate.getTime()) / 86400000) === 1;
+    lastDate && Math.floor((currentDate.getTime() - lastDate.getTime()) / 86400000) === 1;
 
   const nextCurrent = isConsecutive ? current.current + 1 : 1;
   return {

@@ -9,11 +9,13 @@ import {
   listAchievements,
   saveAchievements
 } from '../../src/db/repositories/progressionRepository';
-import {
-  listWorkouts,
-  saveWorkout
-} from '../../src/db/repositories/workoutRepository';
-import type { ProgressionState, StreakState, UserAchievement, WorkoutRecord } from '../../src/domain/types';
+import { listWorkouts, saveWorkout } from '../../src/db/repositories/workoutRepository';
+import type {
+  ProgressionState,
+  StreakState,
+  UserAchievement,
+  WorkoutRecord
+} from '../../src/domain/types';
 
 describe('HeroPath Persistence', () => {
   let db: HeroPathDatabase;

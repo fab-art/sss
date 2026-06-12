@@ -46,7 +46,12 @@ type ProgressionStore = {
 
   hydrate: () => Promise<void>;
   startQuest: (rank: number) => Promise<DailyQuest>;
-  updateExerciseProgress: (exerciseId: string, reps?: number, distance?: number, duration?: number) => Promise<void>;
+  updateExerciseProgress: (
+    exerciseId: string,
+    reps?: number,
+    distance?: number,
+    duration?: number
+  ) => Promise<void>;
   completeActiveQuest: () => Promise<void>;
   syncSteps: (steps: number) => Promise<void>;
 };
@@ -70,7 +75,7 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
       getRunningProgress()
     ]);
 
-    const activeQuest = allQuests.find(q => q.date === today) || null;
+    const activeQuest = allQuests.find((q) => q.date === today) || null;
 
     set({
       progression,
@@ -90,11 +95,38 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
 
     // Available exercises pool
     const pool = [
-      { type: 'push-ups', base: 10, inc: 5, muscles: [{ name: 'chest', intensity: 'primary', growthPercentage: 3.0 }] },
-      { type: 'sit-ups', base: 15, inc: 5, muscles: [{ name: 'core', intensity: 'primary', growthPercentage: 3.5 }] },
-      { type: 'squats', base: 20, inc: 5, muscles: [{ name: 'legs', intensity: 'primary', growthPercentage: 3.0 }] },
-      { type: 'light-run', base: 500, inc: 250, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 4.0 }] },
-      { type: 'walking', base: 1000, inc: 500, unit: 'm', muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 4.0 }] }
+      {
+        type: 'push-ups',
+        base: 10,
+        inc: 5,
+        muscles: [{ name: 'chest', intensity: 'primary', growthPercentage: 3.0 }]
+      },
+      {
+        type: 'sit-ups',
+        base: 15,
+        inc: 5,
+        muscles: [{ name: 'core', intensity: 'primary', growthPercentage: 3.5 }]
+      },
+      {
+        type: 'squats',
+        base: 20,
+        inc: 5,
+        muscles: [{ name: 'legs', intensity: 'primary', growthPercentage: 3.0 }]
+      },
+      {
+        type: 'light-run',
+        base: 500,
+        inc: 250,
+        unit: 'm',
+        muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 4.0 }]
+      },
+      {
+        type: 'walking',
+        base: 1000,
+        inc: 500,
+        unit: 'm',
+        muscles: [{ name: 'cardio', intensity: 'primary', growthPercentage: 4.0 }]
+      }
     ];
 
     // Include all 5 exercises in every quest
@@ -106,7 +138,7 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
       userId: 'default',
       rank,
       questName: `Rank ${rank} Daily Challenge`,
-      exercises: selected.map(ex => ({
+      exercises: selected.map((ex) => ({
         id: createId('ex'),
         questId: '',
         exerciseType: ex.type as ExerciseInstance['exerciseType'],
@@ -122,7 +154,7 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
       isCompleted: false
     };
 
-    quest.exercises.forEach(ex => ex.questId = quest.id);
+    quest.exercises.forEach((ex) => (ex.questId = quest.id));
 
     await saveDailyQuest(quest);
     set({ activeQuest: quest, quests: [quest, ...get().quests] });
@@ -133,15 +165,21 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
     const quest = get().activeQuest;
     if (!quest) return;
 
-    const exercises = quest.exercises.map(ex => {
+    const exercises = quest.exercises.map((ex) => {
       if (ex.id === exerciseId) {
         const repsLogged = reps ?? ex.repsLogged;
         const distanceLogged = distance ?? ex.distanceLogged;
         const durationLogged = duration ?? ex.durationLogged;
 
         let state: ExerciseInstance['state'] = 'in-progress';
-        if (ex.targetReps && repsLogged !== undefined && repsLogged >= ex.targetReps) state = 'completed';
-        if (ex.targetDistance && distanceLogged !== undefined && distanceLogged >= ex.targetDistance) state = 'completed';
+        if (ex.targetReps && repsLogged !== undefined && repsLogged >= ex.targetReps)
+          state = 'completed';
+        if (
+          ex.targetDistance &&
+          distanceLogged !== undefined &&
+          distanceLogged >= ex.targetDistance
+        )
+          state = 'completed';
 
         return { ...ex, repsLogged, distanceLogged, durationLogged, state };
       }
@@ -164,9 +202,9 @@ export const useProgressionStore = create<ProgressionStore>((set, get) => ({
     // Evaluate achievements
     const workouts = await listWorkouts();
     const achievements = evaluateAchievements(
-        { progression, streak, workouts, quests: get().quests },
-        get().achievements,
-        updatedQuest.completedAt
+      { progression, streak, workouts, quests: get().quests },
+      get().achievements,
+      updatedQuest.completedAt
     );
     const achievementXp = getAchievementRewardXp(get().achievements, achievements);
     if (achievementXp > 0) progression = applyXp(progression, achievementXp);

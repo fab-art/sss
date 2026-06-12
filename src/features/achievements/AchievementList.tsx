@@ -23,7 +23,9 @@ export function AchievementList() {
           >
             <div className="flex items-start justify-between gap-4">
               <div>
-                <h3 className={`text-lg font-black ${isUnlocked ? 'text-white' : 'text-slate-400'}`}>
+                <h3
+                  className={`text-lg font-black ${isUnlocked ? 'text-white' : 'text-slate-400'}`}
+                >
                   {achievement.title}
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">{achievement.description}</p>

@@ -17,7 +17,9 @@ export function App() {
   const isProgressionHydrated = useProgressionStore((state) => state.isHydrated);
   const isNutritionHydrated = useNutritionStore((state) => state.isHydrated);
   const isHydrated = isProgressionHydrated && isNutritionHydrated;
-  const [activeTab, setActiveTab] = useState<'home' | 'train' | 'nutrition' | 'wins' | 'profile'>('home');
+  const [activeTab, setActiveTab] = useState<'home' | 'train' | 'nutrition' | 'wins' | 'profile'>(
+    'home'
+  );
 
   useHydrateProgression();
 
@@ -44,16 +46,21 @@ export function App() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               exit={{ opacity: 0, y: -10 }}
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              transition={{ duration: 0.2, ease: 'easeOut' }}
             >
-              {activeTab === 'home' && <Dashboard onStartTraining={navigateToTrain} onViewNutrition={navigateToNutrition} />}
+              {activeTab === 'home' && (
+                <Dashboard
+                  onStartTraining={navigateToTrain}
+                  onViewNutrition={navigateToNutrition}
+                />
+              )}
               {activeTab === 'train' && <WorkoutLogger />}
               {activeTab === 'nutrition' && <NutritionTracker />}
               {activeTab === 'wins' && (
-                  <div className="space-y-6">
-                      <h2 className="text-3xl font-black text-white px-2">Victories</h2>
-                      <AchievementList />
-                  </div>
+                <div className="space-y-6">
+                  <h2 className="text-3xl font-black text-white px-2">Victories</h2>
+                  <AchievementList />
+                </div>
               )}
               {activeTab === 'profile' && <ProfilePanel />}
             </motion.div>
@@ -64,30 +71,36 @@ export function App() {
       {/* Navigation */}
       <nav className="fixed bottom-0 left-0 right-0 bg-zinc-950/80 backdrop-blur-2xl border-t border-white/5 px-6 pt-3 pb-8 z-40">
         <div className="max-w-md mx-auto flex justify-between items-center">
-            {[
-                { id: 'home', icon: Home, label: 'Home' },
-                { id: 'train', icon: Dumbbell, label: 'Train' },
-                { id: 'nutrition', icon: Utensils, label: 'Nutrition' },
-                { id: 'wins', icon: Trophy, label: 'Wins' },
-                { id: 'profile', icon: User, label: 'Profile' }
-            ].map(tab => {
-                const Icon = tab.icon;
-                const isActive = activeTab === tab.id;
-                return (
-                    <button
-                        key={tab.id}
-                        onClick={() => setActiveTab(tab.id as 'home' | 'train' | 'nutrition' | 'wins' | 'profile')}
-                        aria-label={tab.label}
-                        aria-current={isActive ? 'page' : undefined}
-                        className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'text-primary scale-110' : 'text-zinc-600'}`}
-                    >
-                        <div className={`p-2 rounded-2xl transition-colors ${isActive ? 'bg-primary/10' : ''}`}>
-                            <Icon className={`w-6 h-6 ${isActive ? 'fill-primary/20' : ''}`} />
-                        </div>
-                        <span className="text-[9px] font-black uppercase tracking-[0.1em]">{tab.label}</span>
-                    </button>
-                );
-            })}
+          {[
+            { id: 'home', icon: Home, label: 'Home' },
+            { id: 'train', icon: Dumbbell, label: 'Train' },
+            { id: 'nutrition', icon: Utensils, label: 'Nutrition' },
+            { id: 'wins', icon: Trophy, label: 'Wins' },
+            { id: 'profile', icon: User, label: 'Profile' }
+          ].map((tab) => {
+            const Icon = tab.icon;
+            const isActive = activeTab === tab.id;
+            return (
+              <button
+                key={tab.id}
+                onClick={() =>
+                  setActiveTab(tab.id as 'home' | 'train' | 'nutrition' | 'wins' | 'profile')
+                }
+                aria-label={tab.label}
+                aria-current={isActive ? 'page' : undefined}
+                className={`flex flex-col items-center gap-1 transition-all duration-300 ${isActive ? 'text-primary scale-110' : 'text-zinc-600'}`}
+              >
+                <div
+                  className={`p-2 rounded-2xl transition-colors ${isActive ? 'bg-primary/10' : ''}`}
+                >
+                  <Icon className={`w-6 h-6 ${isActive ? 'fill-primary/20' : ''}`} />
+                </div>
+                <span className="text-[9px] font-black uppercase tracking-[0.1em]">
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
         </div>
       </nav>
     </main>

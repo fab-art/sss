@@ -1,9 +1,5 @@
 import { db } from '../database';
-import type {
-  MealEntry,
-  FastingProtocol,
-  RwandanFoodPreset
-} from '../../domain/types';
+import type { MealEntry, FastingProtocol, RwandanFoodPreset } from '../../domain/types';
 
 // V2 Meal Entries
 export async function saveMealEntry(entry: MealEntry): Promise<void> {
@@ -23,7 +19,9 @@ export async function saveFastingProtocol(protocol: FastingProtocol): Promise<vo
   await db.fastingProtocols.put(protocol);
 }
 
-export async function getFastingProtocol(userId: string = 'default'): Promise<FastingProtocol | undefined> {
+export async function getFastingProtocol(
+  userId: string = 'default'
+): Promise<FastingProtocol | undefined> {
   return db.fastingProtocols.get(userId);
 }
 

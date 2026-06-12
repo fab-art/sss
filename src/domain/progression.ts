@@ -1,11 +1,6 @@
 import { getRankForXp } from './ranks';
 import { getLevelForXp } from './xp';
-import type {
-  ProgressionState,
-  WorkoutInput,
-  DailyQuest,
-  RunningProgress
-} from './types';
+import type { ProgressionState, WorkoutInput, DailyQuest, RunningProgress } from './types';
 
 export const initialProgression: ProgressionState = {
   totalXp: 0,
@@ -47,28 +42,25 @@ export function applyXp(state: ProgressionState, xpAwarded: number): Progression
  * Checks if all exercises in a quest are completed.
  */
 export function checkQuestCompletion(quest: DailyQuest): boolean {
-  return quest.exercises.every(ex => ex.state === 'completed');
+  return quest.exercises.every((ex) => ex.state === 'completed');
 }
 
 /**
  * Applies rewards (XP and Muscle Growth) from a completed quest.
  */
-export function applyQuestRewards(
-  state: ProgressionState,
-  quest: DailyQuest
-): ProgressionState {
+export function applyQuestRewards(state: ProgressionState, quest: DailyQuest): ProgressionState {
   if (!quest.isCompleted) return state;
 
   const stateWithXp = applyXp(state, quest.xpReward);
   const nextState = {
-      ...stateWithXp,
-      workoutsCompleted: stateWithXp.workoutsCompleted + 1
+    ...stateWithXp,
+    workoutsCompleted: stateWithXp.workoutsCompleted + 1
   };
 
   const muscleGrowth = { ...nextState.muscleGrowth };
 
-  quest.exercises.forEach(ex => {
-    ex.muscleGroups.forEach(mg => {
+  quest.exercises.forEach((ex) => {
+    ex.muscleGroups.forEach((mg) => {
       muscleGrowth[mg.name] = Math.min(100, (muscleGrowth[mg.name] || 0) + mg.growthPercentage);
     });
   });
