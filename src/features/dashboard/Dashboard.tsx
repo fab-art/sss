@@ -116,7 +116,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
           {/* Calories */}
           <div className="rounded-[2rem] bg-zinc-900 border border-white/5 p-6 space-y-4 shadow-xl">
               <div className="flex justify-between items-center">
-                  <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-500">
+                  <div className="p-3 rounded-2xl bg-primary/10 text-primary">
                     <Flame className="w-5 h-5" />
                   </div>
                   <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Kcal</span>
@@ -129,7 +129,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${caloriePercent}%` }}
-                    className="h-full bg-orange-500"
+                    className="h-full bg-primary"
                   />
               </div>
               <button onClick={onViewNutrition} className="w-full py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-white/10 transition">Log Meal</button>
