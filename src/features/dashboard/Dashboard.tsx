@@ -1,10 +1,11 @@
+import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { useUserStore } from '../../store/useUserStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
-import { Flame, Footprints, CheckCircle2, Trophy } from 'lucide-react';
+import { Flame, Footprints, CheckCircle2, Trophy, Loader2, Check } from 'lucide-react';
 import { useNutritionStore } from '../../store/useNutritionStore';
 import type { DailyNutritionSummary } from '../../domain/types';
 
@@ -17,6 +18,15 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
   const { heroName } = useUserStore();
   const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
   const { getSummary } = useNutritionStore();
+
+  const [syncStatus, setSyncStatus] = useState<'idle' | 'syncing' | 'synced'>('idle');
+
+  useEffect(() => {
+    if (syncStatus === 'synced') {
+      const timer = setTimeout(() => setSyncStatus('idle'), 2000);
+      return () => clearTimeout(timer);
+    }
+  }, [syncStatus]);
 
   const currentRank = getRankForXp(progression.totalXp);
   const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
@@ -109,14 +119,28 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   />
               </div>
               <div className="flex gap-2">
-                  <button onClick={() => syncSteps(currentSteps)} className="w-full py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition">Sync to Phase</button>
+                  <button
+                    onClick={async () => {
+                      setSyncStatus('syncing');
+                      await syncSteps(currentSteps);
+                      setSyncStatus('synced');
+                    }}
+                    disabled={syncStatus !== 'idle'}
+                    aria-live="polite"
+                    aria-label={syncStatus === 'synced' ? "Steps synchronized" : "Synchronize steps to evolution phase"}
+                    className="w-full py-2 bg-primary/10 text-primary rounded-xl text-[10px] font-black uppercase hover:bg-primary/20 transition flex items-center justify-center gap-2 disabled:opacity-50"
+                  >
+                      {syncStatus === 'syncing' && <Loader2 className="w-3 h-3 animate-spin" />}
+                      {syncStatus === 'synced' && <Check className="w-3 h-3" />}
+                      {syncStatus === 'idle' ? 'Sync to Phase' : syncStatus === 'syncing' ? 'Syncing...' : 'Synced'}
+                  </button>
               </div>
           </div>
 
           {/* Calories */}
           <div className="rounded-[2rem] bg-zinc-900 border border-white/5 p-6 space-y-4 shadow-xl">
               <div className="flex justify-between items-center">
-                  <div className="p-3 rounded-2xl bg-orange-500/10 text-orange-500">
+                  <div className="p-3 rounded-2xl bg-primary/10 text-primary">
                     <Flame className="w-5 h-5" />
                   </div>
                   <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest">Kcal</span>
@@ -129,7 +153,7 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
                   <motion.div
                     initial={{ width: 0 }}
                     animate={{ width: `${caloriePercent}%` }}
-                    className="h-full bg-orange-500"
+                    className="h-full bg-primary"
                   />
               </div>
               <button onClick={onViewNutrition} className="w-full py-2 bg-white/5 rounded-xl text-[10px] font-black uppercase hover:bg-white/10 transition">Log Meal</button>
