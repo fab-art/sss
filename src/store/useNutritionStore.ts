@@ -23,7 +23,7 @@ import {
   calculateTDEE,
   calculateNutritionTargets
 } from '../domain/nutrition';
-import { useUserStore } from './useUserStore';
+import { useUserStore, type UserProfile } from './useUserStore';
 import { createId } from '../lib/id';
 import { nowIso } from '../lib/date';
 
@@ -41,7 +41,16 @@ interface NutritionStore {
   getSuggestions: () => string[];
 }
 
-export const useNutritionStore = create<NutritionStore>((set, get) => ({
+export const useNutritionStore = create<NutritionStore>((set, get) => {
+  let summaryCache: {
+    mealEntries: MealEntry[];
+    protocol: FastingProtocol | null;
+    profile: UserProfile;
+    workoutCaloriesBurned: number;
+    summary: DailyNutritionSummary & { targets: ReturnType<typeof calculateNutritionTargets> };
+  } | null = null;
+
+  return {
   protocol: null,
   mealEntries: [],
   foodPresets: [],
@@ -113,6 +122,17 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
     const { mealEntries, protocol } = get();
     const { profile } = useUserStore.getState();
 
+    // Internal caching to avoid redundant TDEE and target calculations during render
+    if (
+      summaryCache &&
+      summaryCache.mealEntries === mealEntries &&
+      summaryCache.protocol === protocol &&
+      summaryCache.profile === profile &&
+      summaryCache.workoutCaloriesBurned === workoutCaloriesBurned
+    ) {
+      return summaryCache.summary;
+    }
+
     const tdee = calculateTDEE(
         profile.age,
         profile.weight,
@@ -130,10 +150,20 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
     };
 
     const summary = summarizeDailyNutrition(mealEntries, workoutCaloriesBurned, dailyGoal, fastingWindow);
-    return {
+    const result = {
         ...summary,
         targets // Include macro targets in summary
     };
+
+    summaryCache = {
+      mealEntries,
+      protocol,
+      profile,
+      workoutCaloriesBurned,
+      summary: result
+    };
+
+    return result;
   },
 
   getSuggestions: () => {
@@ -158,4 +188,5 @@ export const useNutritionStore = create<NutritionStore>((set, get) => ({
 
     return suggestNextMeal(summary.remainingCalories, timeUntilClose, timeOfDay);
   }
-}));
+};
+});
