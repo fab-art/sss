@@ -224,6 +224,7 @@ function GpsTracker({ targetDistance, onComplete, exerciseType }: { targetDistan
                 <div className="flex items-baseline justify-center gap-2">
                     <input
                         type="number"
+                        aria-label="Manual distance entry"
                         value={(exerciseType === 'walking' || exerciseType === 'footsteps') ? Math.round(distance * 1.31) : Math.round(distance) || ''}
                         onChange={(e) => {
                             const val = parseInt(e.target.value) || 0;
@@ -319,6 +320,7 @@ export function WorkoutLogger() {
       <header className="flex justify-between items-center mb-8">
         <button
             onClick={() => view === 'exercise' ? setView('list') : window.location.reload()}
+            aria-label="Go back to quest list"
             className="w-10 h-10 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition"
         >
             <ChevronLeft className="w-6 h-6" />
@@ -462,9 +464,11 @@ export function WorkoutLogger() {
                         <div className="relative">
                             <input
                                 type="number"
+                                aria-label="Manual repetitions entry"
                                 value={manualEntry}
                                 onChange={(e) => setManualEntry(e.target.value)}
                                 onBlur={handleManualUpdate}
+                                onKeyDown={(e) => e.key === 'Enter' && handleManualUpdate()}
                                 placeholder="Edit"
                                 className="w-full h-full py-8 rounded-3xl bg-zinc-900 border border-white/5 text-center font-black text-xl focus:border-primary outline-none"
                             />
