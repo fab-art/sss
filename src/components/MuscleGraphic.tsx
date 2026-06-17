@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,11 +12,16 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
-  // 0% = baseline, 100% = +15% larger
-  const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
-  const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
+// 0% = baseline, 100% = +15% larger
+const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
+const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
 
+/**
+ * MuscleGraphic renders a complex SVG representation of the user's physique development.
+ * It is memoized with a custom comparison to prevent re-renders when growth values haven't changed,
+ * which is critical as it's used in the Dashboard and WorkoutLogger where other state updates frequent.
+ */
+export const MuscleGraphic = memo(({ growth }: { growth: MuscleGrowth }) => {
   return (
     <div className="rounded-[2.5rem] border border-white/5 bg-black/40 p-6 shadow-inner">
       <svg
@@ -121,4 +127,14 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
       </svg>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  if (prevProps.growth === nextProps.growth) return true;
+  return (
+    prevProps.growth.chest === nextProps.growth.chest &&
+    prevProps.growth.core === nextProps.growth.core &&
+    prevProps.growth.legs === nextProps.growth.legs &&
+    prevProps.growth.shoulders === nextProps.growth.shoulders &&
+    prevProps.growth.back === nextProps.growth.back &&
+    prevProps.growth.cardio === nextProps.growth.cardio
+  );
+});
