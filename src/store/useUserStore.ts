@@ -3,7 +3,7 @@ import type { ActivityLevel, NutritionGoal } from '../domain/types';
 
 type Theme = 'dark' | 'light';
 
-type UserProfile = {
+export type UserProfile = {
   age: number;
   weight: number;
   height: number;
