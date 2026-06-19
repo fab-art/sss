@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Trophy, ChevronRight, Target, List, Play, Square, CheckCircle2 } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
@@ -265,13 +265,23 @@ function GpsTracker({ targetDistance, onComplete, exerciseType }: { targetDistan
 }
 
 export function WorkoutLogger() {
-  const { activeQuest, updateExerciseProgress, completeActiveQuest } = useProgressionStore();
+  const { activeQuest, updateExerciseProgress, completeActiveQuest, progression, startQuest } = useProgressionStore();
   const [view, setView] = useState<'list' | 'exercise'>('list');
   const [activeExIdx, setActiveExIdx] = useState(0);
   const [showReward, setShowReward] = useState(false);
   const [manualEntry, setManualEntry] = useState('');
 
-  const { progression, startQuest } = useProgressionStore();
+  const activeEx = activeQuest?.exercises[activeExIdx];
+
+  // Memoize muscle growth object to prevent unnecessary re-renders of MuscleGraphic
+  // Hook must be placed before early return to comply with React's rules
+  const activeExGrowth = useMemo(() => {
+    if (!activeEx) return { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 };
+    return activeEx.muscleGroups.reduce((acc, mg) => {
+        acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
+        return acc;
+    }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 });
+  }, [activeEx]);
 
   if (!activeQuest) {
     return (
@@ -293,8 +303,6 @@ export function WorkoutLogger() {
     );
   }
 
-  const activeEx = activeQuest.exercises[activeExIdx];
-
   const handleCompleteQuest = async () => {
     await completeActiveQuest();
     setShowReward(true);
@@ -302,7 +310,7 @@ export function WorkoutLogger() {
 
   const handleManualUpdate = () => {
       const val = parseInt(manualEntry);
-      if (!isNaN(val)) {
+      if (!isNaN(val) && activeEx) {
           updateExerciseProgress(activeEx.id, val);
           setManualEntry('');
       }
@@ -440,10 +448,7 @@ export function WorkoutLogger() {
                     </div>
 
                     <div className="w-full max-w-[280px] bg-zinc-900/50 rounded-[2.5rem] p-8 border border-white/5">
-                        <MuscleGraphic growth={activeEx.muscleGroups.reduce((acc, mg) => {
-                            acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
-                            return acc;
-                        }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 })} />
+                        <MuscleGraphic growth={activeExGrowth} />
                     </div>
 
                     <div className="w-full grid grid-cols-3 gap-3">
