@@ -160,7 +160,13 @@ export function NutritionTracker() {
                   >
                       <div className="flex justify-between items-center mb-8">
                         <h2 className="text-2xl font-black text-white tracking-tight">Suggestions</h2>
-                        <button onClick={() => setShowSuggestions(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
+                        <button
+                          onClick={() => setShowSuggestions(false)}
+                          aria-label="Close suggestions"
+                          className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
                       </div>
 
                       <div className="space-y-8">
