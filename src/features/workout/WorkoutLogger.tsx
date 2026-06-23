@@ -1,6 +1,7 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Trophy, ChevronRight, Target, List, Play, Square, CheckCircle2 } from 'lucide-react';
+import { useShallow } from 'zustand/react/shallow';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
 
@@ -265,13 +266,59 @@ function GpsTracker({ targetDistance, onComplete, exerciseType }: { targetDistan
 }
 
 export function WorkoutLogger() {
-  const { activeQuest, updateExerciseProgress, completeActiveQuest } = useProgressionStore();
+  /**
+   * Performance: useShallow ensures WorkoutLogger only re-renders when the specific
+   * slices of the progression store change, avoiding unnecessary renders from
+   * other store updates (e.g., achievements or running progress).
+   */
+  const {
+    activeQuest,
+    updateExerciseProgress,
+    completeActiveQuest,
+    progression,
+    startQuest
+  } = useProgressionStore(useShallow(state => ({
+    activeQuest: state.activeQuest,
+    updateExerciseProgress: state.updateExerciseProgress,
+    completeActiveQuest: state.completeActiveQuest,
+    progression: state.progression,
+    startQuest: state.startQuest
+  })));
+
   const [view, setView] = useState<'list' | 'exercise'>('list');
   const [activeExIdx, setActiveExIdx] = useState(0);
   const [showReward, setShowReward] = useState(false);
   const [manualEntry, setManualEntry] = useState('');
 
-  const { progression, startQuest } = useProgressionStore();
+  const activeEx = activeQuest?.exercises[activeExIdx];
+
+  /**
+   * Performance: Memoize derived state calculations to prevent redundant processing
+   * on every render, especially during frequent manual entry interactions.
+   * This also ensures stable object references for props passed to children (like MuscleGraphic).
+   */
+  const isAllComplete = useMemo(() =>
+    activeQuest?.exercises.every(ex => ex.state === 'completed'),
+    [activeQuest?.exercises]
+  );
+
+  const progressPercent = useMemo(() => {
+    if (!activeEx) return 0;
+    return ((activeEx.repsLogged || activeEx.distanceLogged || 0) / (activeEx.targetReps || activeEx.targetDistance || 1)) * 100;
+  }, [activeEx]);
+
+  const questCompletion = useMemo(() => {
+    if (!activeQuest) return 0;
+    return (activeQuest.exercises.filter(ex => ex.state === 'completed').length / activeQuest.exercises.length) * 100;
+  }, [activeQuest]);
+
+  const activeExGrowth = useMemo(() => {
+    if (!activeEx) return { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 };
+    return activeEx.muscleGroups.reduce((acc, mg) => {
+        acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
+        return acc;
+    }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 });
+  }, [activeEx]);
 
   if (!activeQuest) {
     return (
@@ -293,7 +340,7 @@ export function WorkoutLogger() {
     );
   }
 
-  const activeEx = activeQuest.exercises[activeExIdx];
+  if (!activeEx) return null;
 
   const handleCompleteQuest = async () => {
     await completeActiveQuest();
@@ -307,11 +354,6 @@ export function WorkoutLogger() {
           setManualEntry('');
       }
   };
-
-  const isAllComplete = activeQuest.exercises.every(ex => ex.state === 'completed');
-  const progressPercent = ((activeEx?.repsLogged || activeEx?.distanceLogged || 0) / (activeEx?.targetReps || activeEx?.targetDistance || 1)) * 100;
-
-  const questCompletion = (activeQuest.exercises.filter(ex => ex.state === 'completed').length / activeQuest.exercises.length) * 100;
 
   return (
     <section className="max-w-xl mx-auto min-h-screen bg-black text-white flex flex-col p-6 pb-24 font-sans">
@@ -440,10 +482,7 @@ export function WorkoutLogger() {
                     </div>
 
                     <div className="w-full max-w-[280px] bg-zinc-900/50 rounded-[2.5rem] p-8 border border-white/5">
-                        <MuscleGraphic growth={activeEx.muscleGroups.reduce((acc, mg) => {
-                            acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
-                            return acc;
-                        }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 })} />
+                        <MuscleGraphic growth={activeExGrowth} />
                     </div>
 
                     <div className="w-full grid grid-cols-3 gap-3">
