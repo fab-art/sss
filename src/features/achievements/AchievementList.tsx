@@ -16,7 +16,7 @@ export function AchievementList() {
           <div
             className={`rounded-3xl border p-6 transition ${
               isUnlocked
-                ? 'border-orange-500/30 bg-orange-500/10'
+                ? 'border-primary/30 bg-primary/10'
                 : 'border-white/5 bg-slate-900 grayscale opacity-50'
             }`}
             key={achievement.id}
@@ -28,7 +28,7 @@ export function AchievementList() {
                 </h3>
                 <p className="mt-1 text-sm text-slate-500">{achievement.description}</p>
                 <div className="mt-4 flex items-center gap-2">
-                  <span className="rounded-lg bg-orange-500/20 px-2 py-1 text-xs font-bold text-orange-400">
+                  <span className="rounded-lg bg-primary/20 px-2 py-1 text-xs font-bold text-accent">
                     +{achievement.xpReward} XP
                   </span>
                   {unlockedAt && (
@@ -40,7 +40,7 @@ export function AchievementList() {
               </div>
               <div
                 className={`rounded-2xl p-3 ${
-                  isUnlocked ? 'bg-orange-500 text-white' : 'bg-slate-800 text-slate-600'
+                  isUnlocked ? 'bg-primary text-black' : 'bg-slate-800 text-slate-600'
                 }`}
               >
                 <Trophy />
