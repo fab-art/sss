@@ -160,7 +160,13 @@ export function NutritionTracker() {
                   >
                       <div className="flex justify-between items-center mb-8">
                         <h2 className="text-2xl font-black text-white tracking-tight">Suggestions</h2>
-                        <button onClick={() => setShowSuggestions(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
+                        <button
+                          onClick={() => setShowSuggestions(false)}
+                          aria-label="Close suggestions modal"
+                          className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
                       </div>
 
                       <div className="space-y-8">
@@ -217,7 +223,13 @@ export function NutritionTracker() {
                 className="fixed inset-0 z-50 flex flex-col bg-zinc-950"
               >
                   <header className="p-6 flex justify-between items-center border-b border-white/5">
-                      <button onClick={() => setShowLogModal(false)} aria-label="Close" className="p-2 hover:bg-white/5 rounded-full transition"><X className="w-6 h-6" /></button>
+                      <button
+                        onClick={() => setShowLogModal(false)}
+                        aria-label="Close log meal modal"
+                        className="p-2 hover:bg-white/5 rounded-full transition"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
                       <h2 className="text-xl font-black tracking-tight">Log Fuel</h2>
                       <div className="w-10" />
                   </header>
