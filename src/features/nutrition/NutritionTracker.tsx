@@ -81,15 +81,19 @@ export function NutritionTracker() {
         <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Meals Consumed</h3>
         <AnimatePresence mode="popLayout">
           {mealEntries.length === 0 ? (
-            <motion.div
+            <motion.button
               key="empty"
+              layout
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01]"
+              onClick={() => setShowLogModal(true)}
+              className="w-full rounded-[2.5rem] border-2 border-dashed border-white/5 p-12 text-center text-zinc-500 bg-white/[0.01] hover:bg-white/[0.03] hover:border-primary/30 group transition-all"
             >
-              No data logged for today.
-            </motion.div>
+              <Plus className="w-8 h-8 mx-auto mb-3 text-zinc-700 group-hover:text-primary transition-colors" />
+              <p className="font-bold uppercase tracking-widest text-[10px]">No fuel logged today</p>
+              <p className="text-sm font-medium text-zinc-600 mt-1 text-balance">Tap to initiate nutritional protocol for today.</p>
+            </motion.button>
           ) : (
             mealEntries.map((meal) => (
               <motion.div
@@ -160,7 +164,13 @@ export function NutritionTracker() {
                   >
                       <div className="flex justify-between items-center mb-8">
                         <h2 className="text-2xl font-black text-white tracking-tight">Suggestions</h2>
-                        <button onClick={() => setShowSuggestions(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
+                        <button
+                          onClick={() => setShowSuggestions(false)}
+                          aria-label="Close suggestions modal"
+                          className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
                       </div>
 
                       <div className="space-y-8">
@@ -217,7 +227,13 @@ export function NutritionTracker() {
                 className="fixed inset-0 z-50 flex flex-col bg-zinc-950"
               >
                   <header className="p-6 flex justify-between items-center border-b border-white/5">
-                      <button onClick={() => setShowLogModal(false)} aria-label="Close" className="p-2 hover:bg-white/5 rounded-full transition"><X className="w-6 h-6" /></button>
+                      <button
+                        onClick={() => setShowLogModal(false)}
+                        aria-label="Close log fuel modal"
+                        className="p-2 hover:bg-white/5 rounded-full transition"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
                       <h2 className="text-xl font-black tracking-tight">Log Fuel</h2>
                       <div className="w-10" />
                   </header>
