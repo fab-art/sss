@@ -1,3 +1,4 @@
+import React from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,7 +12,13 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
+/**
+ * MuscleGraphic component optimized with React.memo and a custom comparison function.
+ * Since this component renders a complex SVG with multiple motion paths and transforms,
+ * preventing redundant re-renders when growth values haven't changed improves performance,
+ * especially in parents with frequent state updates (like WorkoutLogger).
+ */
+export const MuscleGraphic = React.memo(({ growth }: { growth: MuscleGrowth }) => {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
   const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
@@ -121,4 +128,17 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
       </svg>
     </div>
   );
-}
+}, (prev, next) => {
+  // Fast reference check
+  if (prev.growth === next.growth) return true;
+
+  // Shallow property check of numeric growth values
+  return (
+    prev.growth.chest === next.growth.chest &&
+    prev.growth.core === next.growth.core &&
+    prev.growth.legs === next.growth.legs &&
+    prev.growth.shoulders === next.growth.shoulders &&
+    prev.growth.back === next.growth.back &&
+    prev.growth.cardio === next.growth.cardio
+  );
+});
