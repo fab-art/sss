@@ -1,13 +1,14 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNutritionStore } from '../../store/useNutritionStore';
-import { Plus, Lightbulb, Trash2, X, Check, Zap } from 'lucide-react';
+import { Plus, Lightbulb, Trash2, X, Check, Zap, Loader2 } from 'lucide-react';
 import type { FoodItem, MealEntry } from '../../domain/types';
 
 export function NutritionTracker() {
   const { mealEntries, removeMeal, logMeal, foodPresets, getSuggestions, protocol, getSummary } = useNutritionStore();
   const [showLogModal, setShowLogModal] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [isLogging, setIsLogging] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealEntry['mealType']>('lunch');
   const [selectedFoods, setSelectedFoods] = useState<FoodItem[]>([]);
 
@@ -24,10 +25,15 @@ export function NutritionTracker() {
   };
 
   const handleLogMeal = async () => {
-    if (selectedFoods.length === 0) return;
-    await logMeal(selectedMealType, selectedFoods);
-    setShowLogModal(false);
-    setSelectedFoods([]);
+    if (selectedFoods.length === 0 || isLogging) return;
+    setIsLogging(true);
+    try {
+      await logMeal(selectedMealType, selectedFoods);
+      setShowLogModal(false);
+      setSelectedFoods([]);
+    } finally {
+      setIsLogging(false);
+    }
   };
 
   const suggestions = getSuggestions();
@@ -81,15 +87,22 @@ export function NutritionTracker() {
         <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Meals Consumed</h3>
         <AnimatePresence mode="popLayout">
           {mealEntries.length === 0 ? (
-            <motion.div
+            <motion.button
               key="empty"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01]"
+              onClick={() => setShowLogModal(true)}
+              className="w-full rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01] hover:border-primary/30 hover:text-primary/70 transition-colors group flex flex-col items-center gap-4"
             >
-              No data logged for today.
-            </motion.div>
+              <div className="w-12 h-12 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <Plus className="w-6 h-6" />
+              </div>
+              <div className="space-y-1">
+                <p className="font-black uppercase tracking-widest text-xs text-zinc-500 group-hover:text-primary transition-colors">No data logged</p>
+                <p className="text-[10px] font-bold uppercase tracking-tight opacity-60">Tap to initialize fueling protocol</p>
+              </div>
+            </motion.button>
           ) : (
             mealEntries.map((meal) => (
               <motion.div
@@ -160,7 +173,13 @@ export function NutritionTracker() {
                   >
                       <div className="flex justify-between items-center mb-8">
                         <h2 className="text-2xl font-black text-white tracking-tight">Suggestions</h2>
-                        <button onClick={() => setShowSuggestions(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
+                        <button
+                          onClick={() => setShowSuggestions(false)}
+                          aria-label="Close suggestions modal"
+                          className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
                       </div>
 
                       <div className="space-y-8">
@@ -185,17 +204,25 @@ export function NutritionTracker() {
                                   <p className="text-xs text-zinc-500 font-medium mb-6">Matoke, Grilled Chicken, Spinach, Beans</p>
                                   <button
                                     onClick={async () => {
-                                      const comboFoods = [
-                                        foodPresets.find(f => f.id === 'staple-1')!,
-                                        foodPresets.find(f => f.id === 'protein-1')!,
-                                        foodPresets.find(f => f.id === 'veg-1')!,
-                                        foodPresets.find(f => f.id === 'staple-4')!
-                                      ].filter(Boolean).map(f => ({ ...f, isRwandanFood: true }));
-                                      await logMeal('lunch', comboFoods);
-                                      setShowSuggestions(false);
+                                      if (isLogging) return;
+                                      setIsLogging(true);
+                                      try {
+                                        const comboFoods = [
+                                          foodPresets.find(f => f.id === 'staple-1')!,
+                                          foodPresets.find(f => f.id === 'protein-1')!,
+                                          foodPresets.find(f => f.id === 'veg-1')!,
+                                          foodPresets.find(f => f.id === 'staple-4')!
+                                        ].filter(Boolean).map(f => ({ ...f, isRwandanFood: true }));
+                                        await logMeal('lunch', comboFoods);
+                                        setShowSuggestions(false);
+                                      } finally {
+                                        setIsLogging(false);
+                                      }
                                     }}
-                                    className="w-full py-3 rounded-xl bg-primary text-black font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20"
+                                    disabled={isLogging}
+                                    className="w-full py-3 rounded-xl bg-primary text-black font-black text-[10px] uppercase tracking-widest shadow-lg shadow-primary/20 flex items-center justify-center gap-2 disabled:opacity-50"
                                   >
+                                    {isLogging ? <Loader2 className="w-3 h-3 animate-spin" /> : null}
                                     Quick Log This
                                   </button>
                               </div>
@@ -217,7 +244,13 @@ export function NutritionTracker() {
                 className="fixed inset-0 z-50 flex flex-col bg-zinc-950"
               >
                   <header className="p-6 flex justify-between items-center border-b border-white/5">
-                      <button onClick={() => setShowLogModal(false)} aria-label="Close" className="p-2 hover:bg-white/5 rounded-full transition"><X className="w-6 h-6" /></button>
+                      <button
+                        onClick={() => setShowLogModal(false)}
+                        aria-label="Close log fuel modal"
+                        className="p-2 hover:bg-white/5 rounded-full transition"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
                       <h2 className="text-xl font-black tracking-tight">Log Fuel</h2>
                       <div className="w-10" />
                   </header>
@@ -228,6 +261,7 @@ export function NutritionTracker() {
                               <button
                                 key={type}
                                 onClick={() => setSelectedMealType(type)}
+                                aria-pressed={selectedMealType === type}
                                 className={`flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${selectedMealType === type ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'bg-white/5 text-zinc-500'}`}
                               >
                                   {type}
@@ -252,6 +286,7 @@ export function NutritionTracker() {
                                       <button
                                         key={food.id}
                                         onClick={() => toggleFood(food)}
+                                        aria-pressed={!!isSelected}
                                         className={`flex justify-between items-center p-6 rounded-3xl border transition-all ${isSelected ? 'bg-primary/10 border-primary/30 scale-[0.98]' : 'bg-white/5 border-white/5 hover:border-white/10'}`}
                                       >
                                           <div className="text-left">
@@ -281,9 +316,10 @@ export function NutritionTracker() {
                       </div>
                       <button
                         onClick={handleLogMeal}
-                        disabled={selectedFoods.length === 0}
-                        className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 disabled:opacity-30 transition-all active:scale-95"
+                        disabled={selectedFoods.length === 0 || isLogging}
+                        className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 disabled:opacity-30 transition-all active:scale-95 flex items-center justify-center gap-3"
                       >
+                          {isLogging && <Loader2 className="w-6 h-6 animate-spin" />}
                           Confirm & Log
                       </button>
                   </footer>
