@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,7 +12,13 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
+/**
+ * MuscleGraphic renders a hero's physique with dynamic SVG scaling based on growth.
+ *
+ * PERFORMANCE: This component is wrapped in React.memo with a custom comparison
+ * to prevent expensive SVG re-renders when parent state updates don't affect growth values.
+ */
+function MuscleGraphicComponent({ growth }: { growth: MuscleGrowth }) {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
   const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
@@ -122,3 +129,12 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
     </div>
   );
 }
+
+export const MuscleGraphic = memo(MuscleGraphicComponent, (prevProps, nextProps) => {
+  const prev = prevProps.growth;
+  const next = nextProps.growth;
+
+  // Generic shallow comparison of muscle growth values for better maintainability
+  const keys = Object.keys(prev) as (keyof MuscleGrowth)[];
+  return keys.every(key => prev[key] === next[key]);
+});
