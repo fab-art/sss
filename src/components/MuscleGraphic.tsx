@@ -1,3 +1,4 @@
+import React from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,7 +12,7 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
+function MuscleGraphicBase({ growth }: { growth: MuscleGrowth }) {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
   const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
@@ -122,3 +123,19 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
     </div>
   );
 }
+
+/**
+ * MuscleGraphic is memoized with a custom comparison function to prevent
+ * expensive SVG re-renders when the underlying muscle growth data hasn't changed.
+ * This is particularly important in views with high-frequency state updates.
+ */
+export const MuscleGraphic = React.memo(MuscleGraphicBase, (prev, next) => {
+    return (
+        prev.growth.chest === next.growth.chest &&
+        prev.growth.core === next.growth.core &&
+        prev.growth.legs === next.growth.legs &&
+        prev.growth.shoulders === next.growth.shoulders &&
+        prev.growth.back === next.growth.back &&
+        prev.growth.cardio === next.growth.cardio
+    );
+});
