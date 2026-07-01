@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
 import { useProgressionStore } from '../../store/useProgressionStore';
@@ -15,9 +16,18 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) {
-  const { heroName } = useUserStore();
-  const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
-  const { getSummary } = useNutritionStore();
+  const heroName = useUserStore((s) => s.heroName);
+  const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore(
+    useShallow((s) => ({
+        progression: s.progression,
+        streak: s.streak,
+        activeQuest: s.activeQuest,
+        runningProgress: s.runningProgress,
+        startQuest: s.startQuest,
+        syncSteps: s.syncSteps,
+    }))
+  );
+  const getSummary = useNutritionStore((s) => s.getSummary);
   const [synced, setSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 

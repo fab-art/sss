@@ -1,11 +1,18 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
+import { useShallow } from 'zustand/react/shallow';
 import { ChevronLeft, Trophy, ChevronRight, Target, List, Play, Square, CheckCircle2 } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
 import { MuscleGraphic } from '../../components/MuscleGraphic';
 
 export function QuestRewardModal({ onClose }: { onClose: () => void }) {
-  const { progression, activeQuest, streak } = useProgressionStore();
+  const { progression, activeQuest, streak } = useProgressionStore(
+    useShallow((state) => ({
+      progression: state.progression,
+      activeQuest: state.activeQuest,
+      streak: state.streak,
+    }))
+  );
 
   if (!activeQuest) return null;
 
@@ -265,15 +272,35 @@ function GpsTracker({ targetDistance, onComplete, exerciseType }: { targetDistan
 }
 
 export function WorkoutLogger() {
-  const { activeQuest, updateExerciseProgress, completeActiveQuest } = useProgressionStore();
+  const { progression, activeQuest, updateExerciseProgress, completeActiveQuest, startQuest } = useProgressionStore(
+    useShallow((state) => ({
+      progression: state.progression,
+      activeQuest: state.activeQuest,
+      updateExerciseProgress: state.updateExerciseProgress,
+      completeActiveQuest: state.completeActiveQuest,
+      startQuest: state.startQuest,
+    }))
+  );
   const [view, setView] = useState<'list' | 'exercise'>('list');
   const [activeExIdx, setActiveExIdx] = useState(0);
   const [showReward, setShowReward] = useState(false);
   const [manualEntry, setManualEntry] = useState('');
 
-  const { progression, startQuest } = useProgressionStore();
+  const activeEx = activeQuest?.exercises[activeExIdx];
 
-  if (!activeQuest) {
+  /**
+   * Memoize the muscle growth object to prevent unnecessary re-renders of the MuscleGraphic.
+   * This object is derived from the active exercise's muscle groups and progress.
+   */
+  const derivedGrowth = useMemo(() => {
+    if (!activeEx) return { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 };
+    return activeEx.muscleGroups.reduce((acc, mg) => {
+        acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
+        return acc;
+    }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 });
+  }, [activeEx]);
+
+  if (!activeQuest || !activeEx) {
     return (
         <section className="max-w-xl mx-auto min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 pb-24 font-sans text-center space-y-8">
             <div className="w-24 h-24 bg-primary/10 rounded-[2.5rem] flex items-center justify-center border border-primary/20 shadow-2xl">
@@ -293,14 +320,13 @@ export function WorkoutLogger() {
     );
   }
 
-  const activeEx = activeQuest.exercises[activeExIdx];
-
   const handleCompleteQuest = async () => {
     await completeActiveQuest();
     setShowReward(true);
   };
 
   const handleManualUpdate = () => {
+      if (!activeEx) return;
       const val = parseInt(manualEntry);
       if (!isNaN(val)) {
           updateExerciseProgress(activeEx.id, val);
@@ -440,10 +466,7 @@ export function WorkoutLogger() {
                     </div>
 
                     <div className="w-full max-w-[280px] bg-zinc-900/50 rounded-[2.5rem] p-8 border border-white/5">
-                        <MuscleGraphic growth={activeEx.muscleGroups.reduce((acc, mg) => {
-                            acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
-                            return acc;
-                        }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 })} />
+                        <MuscleGraphic growth={derivedGrowth} />
                     </div>
 
                     <div className="w-full grid grid-cols-3 gap-3">
