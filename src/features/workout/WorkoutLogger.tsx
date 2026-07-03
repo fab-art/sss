@@ -465,8 +465,10 @@ export function WorkoutLogger() {
                                 value={manualEntry}
                                 onChange={(e) => setManualEntry(e.target.value)}
                                 onBlur={handleManualUpdate}
+                                onKeyDown={(e) => e.key === 'Enter' && handleManualUpdate()}
                                 placeholder="Edit"
-                                className="w-full h-full py-8 rounded-3xl bg-zinc-900 border border-white/5 text-center font-black text-xl focus:border-primary outline-none"
+                                aria-label="Enter manual repetitions"
+                                className="w-full h-full py-8 rounded-3xl bg-zinc-900 border border-white/5 text-center font-black text-xl focus:border-primary focus:ring-2 focus:ring-primary/20 focus:outline-none outline-none"
                             />
                         </div>
                     </div>
