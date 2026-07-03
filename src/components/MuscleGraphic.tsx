@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,7 +12,7 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
+function MuscleGraphicComponent({ growth }: { growth: MuscleGrowth }) {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
   const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
@@ -122,3 +123,21 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
     </div>
   );
 }
+
+/**
+ * Memoized version of MuscleGraphic to prevent expensive SVG re-renders.
+ * Custom comparison ensures re-renders only occur when muscle growth values actually change,
+ * which is critical for parent components that recalculate growth objects on every render.
+ */
+export const MuscleGraphic = memo(MuscleGraphicComponent, (prev, next) => {
+  const prevGrowth = prev.growth;
+  const nextGrowth = next.growth;
+  const keys = Object.keys(prevGrowth) as (keyof MuscleGrowth)[];
+
+  // Perform a robust shallow comparison of the growth object properties.
+  // This avoids brittleness if the MuscleGrowth interface is expanded in the future.
+  return (
+    keys.length === Object.keys(nextGrowth).length &&
+    keys.every((key) => prevGrowth[key] === nextGrowth[key])
+  );
+});
