@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNutritionStore } from '../../store/useNutritionStore';
-import { Plus, Lightbulb, Trash2, X, Check, Zap } from 'lucide-react';
+import { Plus, Lightbulb, Trash2, X, Check, Zap, Loader2 } from 'lucide-react';
 import type { FoodItem, MealEntry } from '../../domain/types';
 
 export function NutritionTracker() {
@@ -10,6 +10,7 @@ export function NutritionTracker() {
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealEntry['mealType']>('lunch');
   const [selectedFoods, setSelectedFoods] = useState<FoodItem[]>([]);
+  const [isLogging, setIsLogging] = useState(false);
 
   const summary = getSummary(0);
   const totalCalories = summary?.totalCaloriesConsumed || 0;
@@ -25,9 +26,14 @@ export function NutritionTracker() {
 
   const handleLogMeal = async () => {
     if (selectedFoods.length === 0) return;
-    await logMeal(selectedMealType, selectedFoods);
-    setShowLogModal(false);
-    setSelectedFoods([]);
+    setIsLogging(true);
+    try {
+      await logMeal(selectedMealType, selectedFoods);
+      setShowLogModal(false);
+      setSelectedFoods([]);
+    } finally {
+      setIsLogging(false);
+    }
   };
 
   const suggestions = getSuggestions();
@@ -81,15 +87,17 @@ export function NutritionTracker() {
         <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Meals Consumed</h3>
         <AnimatePresence mode="popLayout">
           {mealEntries.length === 0 ? (
-            <motion.div
+            <motion.button
               key="empty"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01]"
+              onClick={() => setShowLogModal(true)}
+              className="w-full rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 transition-all flex flex-col items-center gap-3 group"
             >
-              No data logged for today.
-            </motion.div>
+              <Plus className="w-8 h-8 text-zinc-700 group-hover:text-primary transition-colors" />
+              <span className="font-bold uppercase tracking-widest text-xs">Log your first fuel entry.</span>
+            </motion.button>
           ) : (
             mealEntries.map((meal) => (
               <motion.div
@@ -160,7 +168,13 @@ export function NutritionTracker() {
                   >
                       <div className="flex justify-between items-center mb-8">
                         <h2 className="text-2xl font-black text-white tracking-tight">Suggestions</h2>
-                        <button onClick={() => setShowSuggestions(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
+                        <button
+                          onClick={() => setShowSuggestions(false)}
+                          aria-label="Close suggestions modal"
+                          className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"
+                        >
+                          <X className="w-5 h-5" />
+                        </button>
                       </div>
 
                       <div className="space-y-8">
@@ -217,7 +231,13 @@ export function NutritionTracker() {
                 className="fixed inset-0 z-50 flex flex-col bg-zinc-950"
               >
                   <header className="p-6 flex justify-between items-center border-b border-white/5">
-                      <button onClick={() => setShowLogModal(false)} aria-label="Close" className="p-2 hover:bg-white/5 rounded-full transition"><X className="w-6 h-6" /></button>
+                      <button
+                        onClick={() => setShowLogModal(false)}
+                        aria-label="Close log fuel modal"
+                        className="p-2 hover:bg-white/5 rounded-full transition"
+                      >
+                        <X className="w-6 h-6" />
+                      </button>
                       <h2 className="text-xl font-black tracking-tight">Log Fuel</h2>
                       <div className="w-10" />
                   </header>
@@ -281,10 +301,17 @@ export function NutritionTracker() {
                       </div>
                       <button
                         onClick={handleLogMeal}
-                        disabled={selectedFoods.length === 0}
-                        className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 disabled:opacity-30 transition-all active:scale-95"
+                        disabled={selectedFoods.length === 0 || isLogging}
+                        className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 disabled:opacity-30 transition-all active:scale-95 flex items-center justify-center gap-2"
                       >
-                          Confirm & Log
+                          {isLogging ? (
+                            <>
+                              <Loader2 className="w-5 h-5 animate-spin" />
+                              Logging...
+                            </>
+                          ) : (
+                            'Confirm & Log'
+                          )}
                       </button>
                   </footer>
               </motion.div>
