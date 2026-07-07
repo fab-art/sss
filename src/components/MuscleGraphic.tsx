@@ -1,3 +1,4 @@
+import React from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,7 +12,7 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
+function MuscleGraphicComponent({ growth }: { growth: MuscleGrowth }) {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
   const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
@@ -122,3 +123,16 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
     </div>
   );
 }
+
+// Perform shallow comparison of the growth object properties to prevent
+// unnecessary re-renders when parent components re-render with new object references.
+export const MuscleGraphic = React.memo(MuscleGraphicComponent, (prevProps, nextProps) => {
+  return (
+    prevProps.growth.back === nextProps.growth.back &&
+    prevProps.growth.cardio === nextProps.growth.cardio &&
+    prevProps.growth.chest === nextProps.growth.chest &&
+    prevProps.growth.core === nextProps.growth.core &&
+    prevProps.growth.legs === nextProps.growth.legs &&
+    prevProps.growth.shoulders === nextProps.growth.shoulders
+  );
+});
