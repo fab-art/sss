@@ -1,12 +1,13 @@
 import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNutritionStore } from '../../store/useNutritionStore';
-import { Plus, Lightbulb, Trash2, X, Check, Zap } from 'lucide-react';
+import { Plus, Lightbulb, Trash2, X, Check, Zap, Loader2 } from 'lucide-react';
 import type { FoodItem, MealEntry } from '../../domain/types';
 
 export function NutritionTracker() {
   const { mealEntries, removeMeal, logMeal, foodPresets, getSuggestions, protocol, getSummary } = useNutritionStore();
   const [showLogModal, setShowLogModal] = useState(false);
+  const [isLogging, setIsLogging] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealEntry['mealType']>('lunch');
   const [selectedFoods, setSelectedFoods] = useState<FoodItem[]>([]);
@@ -25,9 +26,14 @@ export function NutritionTracker() {
 
   const handleLogMeal = async () => {
     if (selectedFoods.length === 0) return;
-    await logMeal(selectedMealType, selectedFoods);
-    setShowLogModal(false);
-    setSelectedFoods([]);
+    setIsLogging(true);
+    try {
+      await logMeal(selectedMealType, selectedFoods);
+      setShowLogModal(false);
+      setSelectedFoods([]);
+    } finally {
+      setIsLogging(false);
+    }
   };
 
   const suggestions = getSuggestions();
@@ -280,11 +286,19 @@ export function NutritionTracker() {
                           </div>
                       </div>
                       <button
+                        type="button"
                         onClick={handleLogMeal}
-                        disabled={selectedFoods.length === 0}
-                        className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 disabled:opacity-30 transition-all active:scale-95"
+                        disabled={selectedFoods.length === 0 || isLogging}
+                        className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 disabled:opacity-30 transition-all active:scale-95 flex items-center justify-center gap-3"
                       >
-                          Confirm & Log
+                          {isLogging ? (
+                              <>
+                                  <Loader2 className="w-5 h-5 animate-spin" />
+                                  Logging...
+                              </>
+                          ) : (
+                              'Confirm & Log'
+                          )}
                       </button>
                   </footer>
               </motion.div>
