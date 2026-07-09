@@ -1,3 +1,4 @@
+import { memo } from 'react';
 import { type MuscleGrowth } from '../domain/types';
 
 const muscleHighlight = {
@@ -11,7 +12,7 @@ const muscleHighlight = {
 
 const inactiveMuscle = 'fill-zinc-800/70 stroke-zinc-700/50';
 
-export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
+export const MuscleGraphic = memo(function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
   // 0% = baseline, 100% = +15% larger
   const scaleFactor = (growth: number) => 1 + (growth / 100) * 0.15;
   const opacityFactor = (growth: number) => 0.2 + (growth / 100) * 0.8;
@@ -121,4 +122,10 @@ export function MuscleGraphic({ growth }: { growth: MuscleGrowth }) {
       </svg>
     </div>
   );
-}
+}, (prevProps, nextProps) => {
+  // Custom shallow comparison for the growth object properties to ensure
+  // we only re-render when the actual muscle data changes, even if a new
+  // object reference is passed.
+  const keys = Object.keys(prevProps.growth) as (keyof MuscleGrowth)[];
+  return keys.every(key => prevProps.growth[key] === nextProps.growth[key]);
+});
