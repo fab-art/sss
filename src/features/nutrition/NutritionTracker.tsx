@@ -81,15 +81,21 @@ export function NutritionTracker() {
         <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Meals Consumed</h3>
         <AnimatePresence mode="popLayout">
           {mealEntries.length === 0 ? (
-            <motion.div
+            <motion.button
               key="empty"
+              type="button"
+              onClick={() => setShowLogModal(true)}
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01]"
+              className="w-full rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01] hover:bg-white/[0.03] hover:border-primary/20 transition-all flex flex-col items-center gap-3 group"
+              aria-label="Log your first fuel entry"
             >
-              No data logged for today.
-            </motion.div>
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-center group-hover:text-primary group-hover:border-primary/20 transition-colors">
+                <Plus className="w-6 h-6" />
+              </div>
+              <span className="font-bold uppercase tracking-widest text-[10px]">Log your first fuel entry.</span>
+            </motion.button>
           ) : (
             mealEntries.map((meal) => (
               <motion.div
