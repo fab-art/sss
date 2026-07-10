@@ -50,7 +50,7 @@ export function QuestRewardModal({ onClose }: { onClose: () => void }) {
             </div>
           </div>
 
-          <button
+          <button type="button"
             onClick={() => {
                 onClose();
                 window.location.reload();
@@ -224,7 +224,9 @@ function GpsTracker({ targetDistance, onComplete, exerciseType }: { targetDistan
                 <div className="flex items-baseline justify-center gap-2">
                     <input
                         type="number"
+                        aria-label={(exerciseType === 'walking' || exerciseType === 'footsteps') ? "Enter manual steps" : "Enter manual distance"}
                         value={(exerciseType === 'walking' || exerciseType === 'footsteps') ? Math.round(distance * 1.31) : Math.round(distance) || ''}
+                        onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
                         onChange={(e) => {
                             const val = parseInt(e.target.value) || 0;
                             if (exerciseType === 'walking' || exerciseType === 'footsteps') {
@@ -246,14 +248,14 @@ function GpsTracker({ targetDistance, onComplete, exerciseType }: { targetDistan
             </div>
 
             {!isTracking ? (
-                <button
+                <button type="button"
                     onClick={startTracking}
                     className="w-full py-6 rounded-[2rem] bg-primary text-black font-black flex items-center justify-center gap-3 shadow-xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
                 >
                     <Play className="w-6 h-6 fill-current" /> Start Tracking
                 </button>
             ) : (
-                <button
+                <button type="button"
                     onClick={stopTracking}
                     className="w-full py-6 rounded-[2rem] bg-zinc-100 text-black font-black flex items-center justify-center gap-3 shadow-xl hover:bg-white active:scale-95 transition-all"
                 >
@@ -283,7 +285,7 @@ export function WorkoutLogger() {
                 <h2 className="text-3xl font-black italic uppercase tracking-tighter">No Active Quest</h2>
                 <p className="text-zinc-500 font-medium px-8">Initialize your daily protocol to begin training and earn XP.</p>
             </div>
-            <button
+            <button type="button"
                 onClick={() => startQuest(progression.level)}
                 className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/20 hover:scale-[1.02] active:scale-95 transition-all"
             >
@@ -318,6 +320,8 @@ export function WorkoutLogger() {
       {/* Header */}
       <header className="flex justify-between items-center mb-8">
         <button
+            type="button"
+            aria-label="Go back"
             onClick={() => view === 'exercise' ? setView('list') : window.location.reload()}
             className="w-10 h-10 rounded-full bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-500 hover:text-white transition"
         >
@@ -361,7 +365,7 @@ export function WorkoutLogger() {
 
                   <div className="space-y-4">
                       {activeQuest.exercises.map((ex, idx) => (
-                          <button
+                          <button type="button"
                             key={ex.id}
                             onClick={() => { setActiveExIdx(idx); setView('exercise'); }}
                             className={`w-full flex items-center justify-between p-5 rounded-3xl border transition-all ${ex.state === 'completed' ? 'bg-primary/5 border-primary/20 opacity-60' : 'bg-black/40 border-white/5 hover:border-primary/30'}`}
@@ -391,7 +395,7 @@ export function WorkoutLogger() {
               </div>
 
               {isAllComplete && (
-                <motion.button
+                <motion.button type="button"
                     initial={{ scale: 0.9, opacity: 0 }}
                     animate={{ scale: 1, opacity: 1 }}
                     onClick={handleCompleteQuest}
@@ -447,13 +451,13 @@ export function WorkoutLogger() {
                     </div>
 
                     <div className="w-full grid grid-cols-3 gap-3">
-                        <button
+                        <button type="button"
                             onClick={() => updateExerciseProgress(activeEx.id, (activeEx.repsLogged || 0) + 1)}
                             className="py-8 rounded-3xl bg-zinc-900 border border-white/5 flex flex-col items-center justify-center gap-2 hover:bg-zinc-800 active:scale-95 transition-all"
                         >
                             <span className="text-3xl font-black text-primary">+1</span>
                         </button>
-                        <button
+                        <button type="button"
                             onClick={() => updateExerciseProgress(activeEx.id, (activeEx.repsLogged || 0) + 5)}
                             className="py-8 rounded-3xl bg-zinc-900 border border-white/5 flex flex-col items-center justify-center gap-2 hover:bg-zinc-800 active:scale-95 transition-all"
                         >
@@ -463,7 +467,9 @@ export function WorkoutLogger() {
                             <input
                                 type="number"
                                 value={manualEntry}
+                                aria-label="Enter manual repetitions"
                                 onChange={(e) => setManualEntry(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && (e.target as HTMLInputElement).blur()}
                                 onBlur={handleManualUpdate}
                                 placeholder="Edit"
                                 className="w-full h-full py-8 rounded-3xl bg-zinc-900 border border-white/5 text-center font-black text-xl focus:border-primary outline-none"
@@ -474,14 +480,14 @@ export function WorkoutLogger() {
               )}
 
               <div className="mt-8 flex gap-3">
-                  <button
+                  <button type="button"
                     onClick={() => setView('list')}
                     className="flex-1 py-5 rounded-[2rem] bg-zinc-900 border border-white/5 font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2"
                   >
                       <List className="w-4 h-4" /> All Exercises
                   </button>
                   {activeExIdx < activeQuest.exercises.length - 1 && (
-                      <button
+                      <button type="button"
                         onClick={() => setActiveExIdx(activeExIdx + 1)}
                         className="flex-1 py-5 rounded-[2rem] bg-primary text-black font-black text-[10px] uppercase tracking-[0.2em] flex items-center justify-center gap-2 shadow-xl"
                       >
