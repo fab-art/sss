@@ -1,17 +1,33 @@
-import { useState } from 'react';
+import { useState, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNutritionStore } from '../../store/useNutritionStore';
+import { useUserStore } from '../../store/useUserStore';
 import { Plus, Lightbulb, Trash2, X, Check, Zap } from 'lucide-react';
 import type { FoodItem, MealEntry } from '../../domain/types';
 
 export function NutritionTracker() {
-  const { mealEntries, removeMeal, logMeal, foodPresets, getSuggestions, protocol, getSummary } = useNutritionStore();
+  const mealEntries = useNutritionStore(s => s.mealEntries);
+  const foodPresets = useNutritionStore(s => s.foodPresets);
+  const protocol = useNutritionStore(s => s.protocol);
+  const getSummary = useNutritionStore(s => s.getSummary);
+  const getSuggestions = useNutritionStore(s => s.getSuggestions);
+  const logMeal = useNutritionStore(s => s.logMeal);
+  const removeMeal = useNutritionStore(s => s.removeMeal);
+
+  const profile = useUserStore(s => s.profile);
+
   const [showLogModal, setShowLogModal] = useState(false);
   const [showSuggestions, setShowSuggestions] = useState(false);
   const [selectedMealType, setSelectedMealType] = useState<MealEntry['mealType']>('lunch');
   const [selectedFoods, setSelectedFoods] = useState<FoodItem[]>([]);
 
-  const summary = getSummary(0);
+  // Memoize summary and suggestions to prevent expensive re-calculations on re-renders
+  // triggered by local state changes (modal toggle, food selection).
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const summary = useMemo(() => getSummary(0), [getSummary, mealEntries, protocol, profile]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const suggestions = useMemo(() => getSuggestions(), [getSuggestions, summary, protocol]);
+
   const totalCalories = summary?.totalCaloriesConsumed || 0;
   const calorieGoal = summary?.dailyGoal || 2500;
 
@@ -30,7 +46,6 @@ export function NutritionTracker() {
     setSelectedFoods([]);
   };
 
-  const suggestions = getSuggestions();
 
   return (
     <section className="max-w-xl mx-auto space-y-8 pb-24">

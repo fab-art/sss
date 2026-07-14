@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
@@ -15,9 +15,20 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) {
-  const { heroName } = useUserStore();
-  const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
-  const { getSummary } = useNutritionStore();
+  const heroName = useUserStore(s => s.heroName);
+  const profile = useUserStore(s => s.profile);
+
+  const progression = useProgressionStore(s => s.progression);
+  const streak = useProgressionStore(s => s.streak);
+  const activeQuest = useProgressionStore(s => s.activeQuest);
+  const runningProgress = useProgressionStore(s => s.runningProgress);
+  const startQuest = useProgressionStore(s => s.startQuest);
+  const syncSteps = useProgressionStore(s => s.syncSteps);
+
+  const getSummary = useNutritionStore(s => s.getSummary);
+  const mealEntries = useNutritionStore(s => s.mealEntries);
+  const protocol = useNutritionStore(s => s.protocol);
+
   const [synced, setSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -28,10 +39,14 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
     }
   }, [synced]);
 
-  const currentRank = getRankForXp(progression.totalXp);
-  const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
+  const currentRank = useMemo(() => getRankForXp(progression.totalXp), [progression.totalXp]);
+  const levelProgress = useMemo(() => (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100, [progression.totalXp]);
 
-  const nutritionSummary = getSummary(0) as (DailyNutritionSummary & { targets?: { proteinG: number; carbsG: number; fatG: number } });
+  const nutritionSummary = useMemo(
+    () => getSummary(0) as (DailyNutritionSummary & { targets?: { proteinG: number; carbsG: number; fatG: number } }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [getSummary, mealEntries, protocol, profile]
+  );
   const caloriePercent = nutritionSummary
     ? (nutritionSummary.totalCaloriesConsumed / nutritionSummary.totalAllowance) * 100
     : 0;
