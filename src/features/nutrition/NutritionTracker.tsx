@@ -81,15 +81,20 @@ export function NutritionTracker() {
         <h3 className="text-[10px] font-black text-zinc-500 uppercase tracking-[0.3em] px-2">Meals Consumed</h3>
         <AnimatePresence mode="popLayout">
           {mealEntries.length === 0 ? (
-            <motion.div
+            <motion.button
               key="empty"
+              type="button"
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               exit={{ opacity: 0 }}
-              className="rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-600 bg-white/[0.01]"
+              onClick={() => setShowLogModal(true)}
+              className="w-full rounded-[2.5rem] border border-dashed border-white/10 p-12 text-center text-zinc-500 bg-white/[0.01] hover:bg-white/[0.02] hover:border-white/20 transition-all flex flex-col items-center gap-4 group"
             >
-              No data logged for today.
-            </motion.div>
+              <div className="w-12 h-12 rounded-2xl bg-zinc-900 border border-white/5 flex items-center justify-center text-zinc-700 group-hover:text-primary group-hover:border-primary/20 transition-colors">
+                <Plus className="w-6 h-6" />
+              </div>
+              <span className="font-bold uppercase tracking-widest text-[10px]">Log your first fuel entry</span>
+            </motion.button>
           ) : (
             mealEntries.map((meal) => (
               <motion.div
@@ -114,6 +119,7 @@ export function NutritionTracker() {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => removeMeal(meal.id)}
                   aria-label={`Remove ${meal.mealType} meal`}
                   className="p-3 text-zinc-700 hover:text-red-500 hover:bg-red-500/5 rounded-xl transition"
@@ -129,6 +135,7 @@ export function NutritionTracker() {
       {/* Actions */}
       <div className="grid grid-cols-2 gap-4">
         <button
+          type="button"
           onClick={() => setShowLogModal(true)}
           className="flex items-center justify-center gap-3 rounded-[2rem] bg-primary py-5 font-black text-black text-sm uppercase tracking-widest shadow-xl shadow-primary/20 hover:scale-[1.02] transition"
         >
@@ -136,6 +143,7 @@ export function NutritionTracker() {
           Log Meal
         </button>
         <button
+          type="button"
           onClick={() => setShowSuggestions(true)}
           className="flex items-center justify-center gap-3 rounded-[2rem] bg-zinc-800 py-5 font-black text-white text-sm uppercase tracking-widest border border-white/5 hover:bg-zinc-700 transition"
         >
@@ -160,7 +168,7 @@ export function NutritionTracker() {
                   >
                       <div className="flex justify-between items-center mb-8">
                         <h2 className="text-2xl font-black text-white tracking-tight">Suggestions</h2>
-                        <button onClick={() => setShowSuggestions(false)} className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
+                        <button type="button" onClick={() => setShowSuggestions(false)} aria-label="Close suggestions" className="p-2 bg-white/5 rounded-full hover:bg-white/10 transition"><X className="w-5 h-5" /></button>
                       </div>
 
                       <div className="space-y-8">
@@ -184,6 +192,7 @@ export function NutritionTracker() {
                                   </div>
                                   <p className="text-xs text-zinc-500 font-medium mb-6">Matoke, Grilled Chicken, Spinach, Beans</p>
                                   <button
+                                    type="button"
                                     onClick={async () => {
                                       const comboFoods = [
                                         foodPresets.find(f => f.id === 'staple-1')!,
@@ -217,7 +226,7 @@ export function NutritionTracker() {
                 className="fixed inset-0 z-50 flex flex-col bg-zinc-950"
               >
                   <header className="p-6 flex justify-between items-center border-b border-white/5">
-                      <button onClick={() => setShowLogModal(false)} aria-label="Close" className="p-2 hover:bg-white/5 rounded-full transition"><X className="w-6 h-6" /></button>
+                      <button type="button" onClick={() => setShowLogModal(false)} aria-label="Close log modal" className="p-2 hover:bg-white/5 rounded-full transition"><X className="w-6 h-6" /></button>
                       <h2 className="text-xl font-black tracking-tight">Log Fuel</h2>
                       <div className="w-10" />
                   </header>
@@ -226,7 +235,9 @@ export function NutritionTracker() {
                       <div className="flex gap-2">
                           {(['breakfast', 'lunch', 'dinner', 'snack'] as const).map(type => (
                               <button
+                                type="button"
                                 key={type}
+                                aria-pressed={selectedMealType === type}
                                 onClick={() => setSelectedMealType(type)}
                                 className={`flex-1 py-4 rounded-2xl font-black text-[10px] uppercase tracking-widest transition-all ${selectedMealType === type ? 'bg-primary text-black shadow-lg shadow-primary/20' : 'bg-white/5 text-zinc-500'}`}
                               >
@@ -250,7 +261,9 @@ export function NutritionTracker() {
                                   const isSelected = selectedFoods.find(f => f.id === food.id);
                                   return (
                                       <button
+                                        type="button"
                                         key={food.id}
+                                        aria-pressed={!!isSelected}
                                         onClick={() => toggleFood(food)}
                                         className={`flex justify-between items-center p-6 rounded-3xl border transition-all ${isSelected ? 'bg-primary/10 border-primary/30 scale-[0.98]' : 'bg-white/5 border-white/5 hover:border-white/10'}`}
                                       >
@@ -280,6 +293,7 @@ export function NutritionTracker() {
                           </div>
                       </div>
                       <button
+                        type="button"
                         onClick={handleLogMeal}
                         disabled={selectedFoods.length === 0}
                         className="w-full py-6 rounded-[2.5rem] bg-primary text-black font-black text-lg uppercase tracking-widest shadow-2xl shadow-primary/30 disabled:opacity-30 transition-all active:scale-95"
