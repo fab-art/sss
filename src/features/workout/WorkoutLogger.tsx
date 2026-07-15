@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ChevronLeft, Trophy, ChevronRight, Target, List, Play, Square, CheckCircle2 } from 'lucide-react';
 import { useProgressionStore } from '../../store/useProgressionStore';
@@ -273,6 +273,16 @@ export function WorkoutLogger() {
 
   const { progression, startQuest } = useProgressionStore();
 
+  const activeEx = activeQuest?.exercises[activeExIdx];
+
+  const muscleGrowthData = useMemo(() => {
+    if (!activeEx) return { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 };
+    return activeEx.muscleGroups.reduce((acc, mg) => {
+        acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
+        return acc;
+    }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 });
+  }, [activeEx]);
+
   if (!activeQuest) {
     return (
         <section className="max-w-xl mx-auto min-h-screen bg-black text-white flex flex-col items-center justify-center p-6 pb-24 font-sans text-center space-y-8">
@@ -292,8 +302,6 @@ export function WorkoutLogger() {
         </section>
     );
   }
-
-  const activeEx = activeQuest.exercises[activeExIdx];
 
   const handleCompleteQuest = async () => {
     await completeActiveQuest();
@@ -440,10 +448,7 @@ export function WorkoutLogger() {
                     </div>
 
                     <div className="w-full max-w-[280px] bg-zinc-900/50 rounded-[2.5rem] p-8 border border-white/5">
-                        <MuscleGraphic growth={activeEx.muscleGroups.reduce((acc, mg) => {
-                            acc[mg.name as keyof typeof acc] = (activeEx.repsLogged ? (activeEx.repsLogged / (activeEx.targetReps || 1)) * mg.growthPercentage : 0);
-                            return acc;
-                        }, { chest: 0, core: 0, legs: 0, shoulders: 0, back: 0, cardio: 0 })} />
+                        <MuscleGraphic growth={muscleGrowthData} />
                     </div>
 
                     <div className="w-full grid grid-cols-3 gap-3">
