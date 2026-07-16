@@ -1,4 +1,5 @@
-import { useState, useEffect } from 'react';
+/* eslint-disable react-hooks/exhaustive-deps */
+import { useState, useEffect, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { getRankForXp } from '../../domain/ranks';
 import { getXpIntoLevel, getXpRequiredForNextLevel } from '../../domain/xp';
@@ -15,9 +16,9 @@ interface DashboardProps {
 }
 
 export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) {
-  const { heroName } = useUserStore();
+  const { heroName, profile } = useUserStore();
   const { progression, streak, activeQuest, runningProgress, startQuest, syncSteps } = useProgressionStore();
-  const { getSummary } = useNutritionStore();
+  const { getSummary, mealEntries, protocol } = useNutritionStore();
   const [synced, setSynced] = useState(false);
   const [isSyncing, setIsSyncing] = useState(false);
 
@@ -31,7 +32,12 @@ export function Dashboard({ onStartTraining, onViewNutrition }: DashboardProps) 
   const currentRank = getRankForXp(progression.totalXp);
   const levelProgress = (getXpIntoLevel(progression.totalXp) / getXpRequiredForNextLevel()) * 100;
 
-  const nutritionSummary = getSummary(0) as (DailyNutritionSummary & { targets?: { proteinG: number; carbsG: number; fatG: number } });
+  // Memoize summary to prevent redundant expensive calculations on every render of the Dashboard (e.g. when steps update or timers tick).
+  // Also subscribing to mealEntries, protocol, and profile guarantees the calories display updates when meals are logged.
+  const nutritionSummary = useMemo(() => {
+    return getSummary(0) as (DailyNutritionSummary & { targets?: { proteinG: number; carbsG: number; fatG: number } });
+  }, [getSummary, mealEntries, protocol, profile]);
+
   const caloriePercent = nutritionSummary
     ? (nutritionSummary.totalCaloriesConsumed / nutritionSummary.totalAllowance) * 100
     : 0;
